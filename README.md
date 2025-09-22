@@ -109,8 +109,8 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>0.321</td>
         <td>81.1</td>
         <td>85.3</td>
-        <td><u>0.148</u></td>
-        <td><u>0.115</u></td>
+        <td><ins>0.148</ins></td>
+        <td><ins>0.115</ins></td>
         <td>0.146</td>
         <td>0.122</td>
         <td>1.0</td>
@@ -125,7 +125,7 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>0.185</td>
         <td>0.223</td>
         <td>76.7</td>
-        <td><u>86.3</u></td>
+        <td><ins>86.3</ins></td>
         <td>0.176</td>
         <td><b>0.113</b></td>
         <td><b>0.118</b></td>
@@ -135,10 +135,10 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
     </tr>
     <tr>
         <td>mathpix<sup>*</sup></td>
-        <td><u>0.128</u></td>
-        <td><u>0.146</u></td>
+        <td><ins>0.128</ins></td>
+        <td><ins>0.146</ins></td>
         <td>0.128</td>
-        <td><u>0.152</u></td>
+        <td><ins>0.152</ins></td>
         <td><b>0.06</b></td>
         <td><b>0.142</b></td>
         <td><b>86.2</b></td>
@@ -240,7 +240,7 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>dots.ocr</td>
         <td>0.186</td>
         <td>0.198</td>
-        <td><u>0.115</u></td>
+        <td><ins>0.115</ins></td>
         <td>0.169</td>
         <td>0.291</td>
         <td>0.358</td>
@@ -251,7 +251,7 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>0.165</td>
         <td>0.123</td>
         <td>1.0</td>
-        <td><u>0.255</u></td>
+        <td><ins>0.255</ins></td>
     </tr>
     <tr>
         <td>MonkeyOcr</td>
@@ -338,20 +338,20 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>1.0</td>
         <td>0.927</td>
     </tr>
-    <tr style="background-color: #f0f8ff;">
-        <td>Logics-Parsing</td>
+    <tr>
+        <td><b>Logics-Parsing</b></td>
         <td><b>0.124</b></td>
         <td><b>0.145</b></td>
         <td><b>0.089</b></td>
         <td><b>0.139</b></td>
-        <td><u>0.106</u></td>
-        <td><u>0.165</u></td>
+        <td><ins>0.106</ins></td>
+        <td><ins>0.165</ins></td>
         <td>76.6</td>
         <td>79.5</td>
         <td>0.165</td>
         <td>0.166</td>
-        <td><u>0.136</u></td>
-        <td><u>0.113</u></td>
+        <td><ins>0.136</ins></td>
+        <td><ins>0.113</ins></td>
         <td><b>0.519</b></td>
         <td><b>0.252</b></td>
     </tr>
@@ -428,17 +428,17 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
         <td>Gemini2.5 pro</td>
         <td>0.185</td>
         <td>0.20</td>
-        <td><u>0.115</u></td>
+        <td><ins>0.115</ins></td>
         <td>0.155</td>
         <td>0.288</td>
         <td>0.326</td>
-        <td><u>82.6</u></td>
+        <td><ins>82.6</ins></td>
         <td>80.3</td>
         <td>0.154</td>
         <td>0.182</td>
         <td>0.181</td>
         <td>0.136</td>
-        <td><u>0.535</u></td>
+        <td><ins>0.535</ins></td>
         <td>0.26</td>
     </tr>
 
