@@ -67,7 +67,7 @@ Logics-Parsing is a powerful, end-to-end document parsing model built upon a gen
 
 Existing document-parsing benchmarks often provide limited coverage of complex layouts and STEM content. To address this, we constructed an in-house benchmark comprising 1,078 page-level images across nine major categories and over twenty sub-categories. Our model achieves the best performance on this benchmark.
 <div align="center">
-  <img src="imgs/BenchCls.png">
+  <img src="imgs/benchcls.png">
 </div>
 <table>
     <tr>
