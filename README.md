@@ -4,7 +4,7 @@
 
 
 <p align="center">
-    🤗 <a href="https://huggingface.co/Logics-MLLM/Logics-Parsing">Model</a>&nbsp&nbsp | &nbsp&nbsp🤖 <a href="https://www.modelscope.cn/studios/Alibaba-DT/Logics-Parsing/summary">Demo</a>&nbsp&nbsp | &nbsp&nbsp📑 <a href="https://arxiv.org/">Technical Report</a>
+    🤗 <a href="https://huggingface.co/Logics-MLLM/Logics-Parsing">Model</a>&nbsp&nbsp | &nbsp&nbsp🤖 <a href="https://www.modelscope.cn/studios/Alibaba-DT/Logics-Parsing/summary">Demo</a>&nbsp&nbsp | &nbsp&nbsp📑 <a href="https://arxiv.org/abs/2509.19760">Technical Report</a>
 </p>
 
 ## Introduction
