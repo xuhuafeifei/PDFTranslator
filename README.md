@@ -458,7 +458,7 @@ Existing document-parsing benchmarks often provide limited coverage of complex l
 conda create -n logis-parsing python=3.10
 conda activate logis-parsing
 
-pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+pip install -r requirement.txt
 
 ```
 ### 2. Download Model Weights
