@@ -150,15 +150,18 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         width = x2 - x1
         height = y2 - y1
         
+        # 解包缩放比例
+        scale_x, scale_y = scale
+        
         # 计算缩放后的坐标（用于截取图片）
-        scaled_x1 = int(x1 * scale)
-        scaled_y1 = int(y1 * scale)
-        scaled_x2 = int(x2 * scale)
-        scaled_y2 = int(y2 * scale)
+        scaled_x1 = int(x1 * scale_x)
+        scaled_y1 = int(y1 * scale_y)
+        scaled_x2 = int(x2 * scale_x)
+        scaled_y2 = int(y2 * scale_y)
         
         # 计算缩放后的尺寸（用于LaTeX）
-        scaled_width = int(width * scale)
-        scaled_height = int(height * scale)
+        scaled_width = int(width * scale_x)
+        scaled_height = int(height * scale_y)
         
         print(f"  原始尺寸: {width} x {height}")
         print(f"  缩放后尺寸: {scaled_width} x {scaled_height}")
