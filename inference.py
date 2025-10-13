@@ -146,7 +146,7 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         
         # 构建新的标签
         old_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}"/>'
-        new_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}">\\includegraphics{{{image_name}}}</img>'
+        new_tag = f'\\includegraphics{{{image_name}}}'
         
         # 替换第一个匹配（避免重复替换）
         result = result.replace(old_tag, new_tag, 1)
@@ -257,7 +257,6 @@ if __name__ == "__main__":
     output_path =  args.output_path
     attn = args.attn
     device = args.device
-    print(device)
     device_map = "cuda" if device == "cuda" else "cpu"
     print(attn)
     print(device)
@@ -273,8 +272,6 @@ if __name__ == "__main__":
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
-        # print(f"写入检测区域图片...")
-        # write_plot_bbox(image_path, prediction, h, w)
         print(f"持久化预测结果...")
         write_prediction(prediction, output_path)
     else:
@@ -290,8 +287,6 @@ if __name__ == "__main__":
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
-                # print(f"写入检测区域图片...")
-                # write_plot_bbox(temp_path, prediction, h, w)
             print(f"持久化预测结果...")
             write_prediction("\n".join(prediction_list), output_path)
         finally:
