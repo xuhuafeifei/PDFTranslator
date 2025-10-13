@@ -141,7 +141,7 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         print(f"处理第 {i+1} 个img标签: 坐标({x1},{y1},{x2},{y2})")
         
         # 生成图片路径
-        image_name = image_name_template.format(page_num=page_num, count=num)
+        image_name = image_name_template.format(page_num=page_num, number=num)
         print(f"  页码: {page_num}, 序号: {num}, 图片路径: {image_name}")
         
         # 构建新的标签
