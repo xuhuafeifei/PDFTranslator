@@ -142,6 +142,10 @@ def write_prediction(prediction: str, output_path: str):
     with open(output_path + ".case_tag", 'w') as f:
         f.write(prediction)
 
+def write_plot_bbox(image_path, prediction, h, w):
+    output_img_path = image_path.split(".")[0]+"_vis.png"
+    plot_bbox(image_path, prediction, h, w, output_img_path)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Logics-Parsing for document parsing and visualize the output.")
 
@@ -172,6 +176,9 @@ if __name__ == "__main__":
     device = args.device
     print(device)
     device_map = "cuda" if device == "cuda" else "cpu"
+    print(attn)
+    print(device)
+    print(device_map)
     print(device_map)
 
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation=attn, device_map=device_map)
@@ -181,9 +188,11 @@ if __name__ == "__main__":
 
     if args.image_path:
         image_path = args.image_path
-        prediction, _, _= inference(image_path, prompt)
-
-        write_prediction(prediction, output_path)
+        prediction, h, w= inference(image_path, prompt)
+        print(f"写入检测区域图片...")
+        write_plot_bbox(image_path, prediction, h, w)
+        print(f"持久化预测结果...")
+        write_prediction(prediction, output_path, h, w)
     else:
         pdf_path = args.pdf_path
         converter = PDFToImageConverter()
@@ -193,9 +202,12 @@ if __name__ == "__main__":
             # for循环处理所有内容
             for i, temp_path in enumerate(convert_temp_path):
                 print(f"处理第{i+1}页...")
-                prediction, _, _= inference(temp_path, prompt)
+                prediction, h, w= inference(temp_path, prompt)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
+                print(f"写入检测区域图片...")
+                write_plot_bbox(temp_path, prediction, h, w)
+            print(f"持久化预测结果...")
             write_prediction("\n".join(prediction_list), output_path)
         finally:
             converter.cleanup_temp_images(convert_temp_path)

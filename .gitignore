@@ -23,6 +23,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+output/
+
 # PyInstaller
 *.manifest
 *.spec
@@ -48,6 +50,8 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+test/
 
 # Django stuff:
 *.log
