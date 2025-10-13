@@ -112,6 +112,28 @@ def smart_resize(
     return h_bar, w_bar
 
 '''
+通过img_div确定html_content中图片名称
+'''
+def get_fig_name_by_div(html_content, img_div) -> str:
+    # html按照换行符分割
+    try:
+        # 切除换行的同时, 去除所有的空行
+        html_content_lines = [line for line in html_content.split("\n") if line.strip() != ""]
+        for i, line in enumerate(html_content_lines):
+            if img_div in line:
+                # 返回下一行内容, 并去除下一行的所有标签内容
+                return re.sub(
+                    r'<p\b[^>]*>(.*?)<\/p>',
+                    r'\1\n',
+                    html_content_lines[i+1],
+                    flags=re.DOTALL | re.IGNORECASE,
+                ).strip()
+    except Exception as e:
+        print(f"获取图片名称失败: {e}")
+        return "get_fig_name_error"
+    return "can_not_find_fig_name"
+
+'''
 获取图片, 并替换预测结果中的img标签为includegraphics标签, 并保存图片
 img: 图片
 scale: 缩放
@@ -159,23 +181,21 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         scaled_x2 = int(x2 * scale_x)
         scaled_y2 = int(y2 * scale_y)
         
-        # 计算缩放后的尺寸（用于LaTeX）
-        # scaled_width = int(width * scale_x)
-        # scaled_height = int(height * scale_y)
-        
         print(f"  原始尺寸: {width} x {height}")
-        print(f"  缩放后尺寸: {scaled_width} x {scaled_height}")
         
         # 生成图片路径
         image_name = image_name_template.format(page_num=page_num, number=num)
         print(f"  页码: {page_num}, 序号: {num}, 图片路径: {image_name}")
-        
-        # 构建新的标签（包含尺寸）
+
+        # 获取旧标签
         old_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}"/>'
-        new_tag = f'\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}'
-        
+        # 获取图片名称
+        fig_name = get_fig_name_by_div(html_content, old_tag)
+        # 构建新的标签（包含尺寸和居中）
+        new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}'
+
         # 替换第一个匹配（避免重复替换）
-        result = result.replace(old_tag, new_tag, 1)
+        result = result.replace(old_tag, new_tag, 1).replace(fig_name, "", 1)
         print(f"  替换: {old_tag} -> {new_tag}")
 
         print(f"截取并保存图片...")
