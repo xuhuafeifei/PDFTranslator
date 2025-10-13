@@ -192,7 +192,7 @@ if __name__ == "__main__":
         print(f"写入检测区域图片...")
         write_plot_bbox(image_path, prediction, h, w)
         print(f"持久化预测结果...")
-        write_prediction(prediction, output_path, h, w)
+        write_prediction(prediction, output_path)
     else:
         pdf_path = args.pdf_path
         converter = PDFToImageConverter()
