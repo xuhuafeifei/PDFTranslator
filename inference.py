@@ -2,7 +2,7 @@ import torch
 import os 
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from PIL import Image,ImageFont,ImageDraw
-import json 
+import os 
 import re
 import math 
 import cv2 
@@ -135,6 +135,7 @@ def plot_bbox(img_path, pred, input_height, input_width, output_path):
     cv2.imwrite(output_path, img)
 
 def write_prediction(prediction: str, output_path: str):
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         f.write(prediction)
     prediction = qwenvl_pred_cast_tag(prediction)
