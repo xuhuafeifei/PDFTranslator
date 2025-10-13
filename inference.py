@@ -11,36 +11,39 @@ from pdf_to_image import convert_pdf_to_images_temp, PDFToImageConverter
 
 
 def inference(img_url, prompt, system_prompt="You are a helpful assistant"):
-  image = Image.open(img_url)
-  messages = [
-    {
-      "role": "system",
-      "content": system_prompt
-    },
-    {
-      "role": "user",
-      "content": [
+    print("开始推理...")
+    image = Image.open(img_url)
+    messages = [
         {
-          "type": "text",
-          "text": prompt
+        "role": "system",
+        "content": system_prompt
         },
         {
-          "image": img_url
+        "role": "user",
+        "content": [
+            {
+            "type": "text",
+            "text": prompt
+            },
+            {
+            "image": img_url
+            }
+        ]
         }
-      ]
-    }
-  ]
-  text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-  inputs = processor(text=[text], images=[image], padding=True, return_tensors="pt").to(device_map)
+    ]
+    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    inputs = processor(text=[text], images=[image], padding=True, return_tensors="pt").to(device_map)
 
-  output_ids = model.generate(**inputs, max_new_tokens=8192)
-  generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs.input_ids, output_ids)]
-  output_text = processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+    print("准备生成...")
+    output_ids = model.generate(**inputs, max_new_tokens=8192)
+    generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs.input_ids, output_ids)]
+    output_text = processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
 
-  input_height = inputs['image_grid_thw'][0][1]*14
-  input_width = inputs['image_grid_thw'][0][2]*14
+    input_height = inputs['image_grid_thw'][0][1]*14
+    input_width = inputs['image_grid_thw'][0][2]*14
 
-  return output_text[0], input_height, input_width
+    print("生成完成...")
+    return output_text[0], input_height, input_width
 
 
 
@@ -185,8 +188,10 @@ if __name__ == "__main__":
         try:
             prediction_list = []
             # for循环处理所有内容
-            for temp_path in convert_temp_path:
+            for i, temp_path in enumerate(convert_temp_path):
+                print(f"处理第{i+1}页...")
                 prediction, _, _= inference(temp_path, prompt)
+                print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
             write_prediction("\n".join(prediction_list), output_path)
         finally:
