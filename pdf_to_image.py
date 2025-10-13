@@ -84,24 +84,29 @@ class PDFToImageConverter:
 
             # 使用PyMuPDF将PDF转换为图片
             doc = fitz.open(pdf_path)
+            page_count = len(doc)  # 在关闭文档前获取页数
             image_files = []
             
-            for page_num in range(len(doc)):
-                page = doc.load_page(page_num)
-                # 设置缩放矩阵（DPI转换）
-                zoom = self.dpi / 72.0  # 72是PDF的默认DPI
-                mat = fitz.Matrix(zoom, zoom)
-                pix = page.get_pixmap(matrix=mat)
-                
-                # 保存图片
-                image_filename = f"page_{page_num+1:03d}.{self.output_format.lower()}"
-                image_path = Path(temp_dir) / image_filename
-                pix.save(str(image_path))
-                image_files.append(str(image_path))
-                logger.info(f"保存图片: {image_path}")
+            try:
+                for page_num in range(page_count):
+                    page = doc.load_page(page_num)
+                    # 设置缩放矩阵（DPI转换）
+                    zoom = self.dpi / 72.0  # 72是PDF的默认DPI
+                    mat = fitz.Matrix(zoom, zoom)
+                    pix = page.get_pixmap(matrix=mat)
+                    
+                    # 保存图片
+                    image_filename = f"page_{page_num+1:03d}.{self.output_format.lower()}"
+                    image_path = Path(temp_dir) / image_filename
+                    pix.save(str(image_path))
+                    image_files.append(str(image_path))
+                    logger.info(f"保存图片: {image_path}")
+            finally:
+                # 确保文档被关闭
+                if doc:
+                    doc.close()
             
-            doc.close()
-            logger.info(f"成功转换 {len(doc)} 页为图片")
+            logger.info(f"成功转换 {page_count} 页为图片")
             return image_files
 
         except Exception as e:
@@ -155,24 +160,29 @@ class PDFToImageConverter:
         try:
             # 使用PyMuPDF将PDF转换为图片
             doc = fitz.open(pdf_path)
+            page_count = len(doc)  # 在关闭文档前获取页数
             saved_files = []
             
-            for page_num in range(len(doc)):
-                page = doc.load_page(page_num)
-                # 设置缩放矩阵（DPI转换）
-                zoom = self.dpi / 72.0  # 72是PDF的默认DPI
-                mat = fitz.Matrix(zoom, zoom)
-                pix = page.get_pixmap(matrix=mat)
-                
-                # 保存图片到输出目录
-                image_filename = f"{filename_prefix}_page_{page_num+1:03d}.{self.output_format.lower()}"
-                image_path = output_dir / image_filename
-                pix.save(str(image_path))
-                saved_files.append(str(image_path))
-                logger.info(f"保存图片: {image_path}")
+            try:
+                for page_num in range(page_count):
+                    page = doc.load_page(page_num)
+                    # 设置缩放矩阵（DPI转换）
+                    zoom = self.dpi / 72.0  # 72是PDF的默认DPI
+                    mat = fitz.Matrix(zoom, zoom)
+                    pix = page.get_pixmap(matrix=mat)
+                    
+                    # 保存图片到输出目录
+                    image_filename = f"{filename_prefix}_page_{page_num+1:03d}.{self.output_format.lower()}"
+                    image_path = output_dir / image_filename
+                    pix.save(str(image_path))
+                    saved_files.append(str(image_path))
+                    logger.info(f"保存图片: {image_path}")
+            finally:
+                # 确保文档被关闭
+                if doc:
+                    doc.close()
             
-            doc.close()
-            logger.info(f"成功转换 {len(doc)} 页为图片到 {output_dir}")
+            logger.info(f"成功转换 {page_count} 页为图片到 {output_dir}")
             return saved_files
 
         except Exception as e:
