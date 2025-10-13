@@ -114,7 +114,7 @@ def plot_bbox(img_path, pred, input_height, input_width, output_path):
     scale = (img_width / input_width, img_height / input_height)
     bboxes = []
 
-    pattern = re.compile(r'data-bbox="(\d+),(\d+),(\d+),(\d+)"')
+    pattern = re.compile(r'img data-bbox="(\d+),(\d+),(\d+),(\d+)"')
 
     scale_x, scale_y = scale  
 
