@@ -160,8 +160,8 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         scaled_y2 = int(y2 * scale_y)
         
         # 计算缩放后的尺寸（用于LaTeX）
-        scaled_width = int(width * scale_x)
-        scaled_height = int(height * scale_y)
+        # scaled_width = int(width * scale_x)
+        # scaled_height = int(height * scale_y)
         
         print(f"  原始尺寸: {width} x {height}")
         print(f"  缩放后尺寸: {scaled_width} x {scaled_height}")
@@ -172,7 +172,7 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         
         # 构建新的标签（包含尺寸）
         old_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}"/>'
-        new_tag = f'\\includegraphics[width={scaled_width}pt, height={scaled_height}pt]{{{image_name}}}'
+        new_tag = f'\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}'
         
         # 替换第一个匹配（避免重复替换）
         result = result.replace(old_tag, new_tag, 1)
