@@ -70,6 +70,9 @@ def qwenvl_pred_cast_tag(input_text: str) -> str:
             rf'\s*<div\b[^>]*class="{class_name}"[^>]*>(.*?)<\/div>\s*',
             flags=re.DOTALL | re.IGNORECASE,
         )
+        if class_name == 'image':
+            # 图片不能和上下文本贴合
+            return pattern.sub(r' \n\n\1\n\n ', txt)
         return pattern.sub(r' \1 ', txt)
 
     for cls in ['image', 'chemistry', 'table', 'formula', 'image caption']:
@@ -140,29 +143,42 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         x1, y1, x2, y2 = match
         print(f"处理第 {i+1} 个img标签: 坐标({x1},{y1},{x2},{y2})")
         
+        # 转换坐标为整数
+        x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+        
+        # 计算原始图片尺寸
+        width = x2 - x1
+        height = y2 - y1
+        
+        # 计算缩放后的坐标（用于截取图片）
+        scaled_x1 = int(x1 * scale)
+        scaled_y1 = int(y1 * scale)
+        scaled_x2 = int(x2 * scale)
+        scaled_y2 = int(y2 * scale)
+        
+        # 计算缩放后的尺寸（用于LaTeX）
+        scaled_width = int(width * scale)
+        scaled_height = int(height * scale)
+        
+        print(f"  原始尺寸: {width} x {height}")
+        print(f"  缩放后尺寸: {scaled_width} x {scaled_height}")
+        
         # 生成图片路径
         image_name = image_name_template.format(page_num=page_num, number=num)
         print(f"  页码: {page_num}, 序号: {num}, 图片路径: {image_name}")
         
-        # 构建新的标签
+        # 构建新的标签（包含尺寸）
         old_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}"/>'
-        new_tag = f'\\includegraphics{{{image_name}}}'
+        new_tag = f'\\includegraphics[width={scaled_width}pt, height={scaled_height}pt]{{{image_name}}}'
         
         # 替换第一个匹配（避免重复替换）
         result = result.replace(old_tag, new_tag, 1)
         print(f"  替换: {old_tag} -> {new_tag}")
 
         print(f"截取并保存图片...")
-        # 截取并保存图片
-        x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
-        # 确定缩放
-        scale_x, scale_y = scale
-        x1 = int(x1 * scale_x)
-        y1 = int(y1 * scale_y)
-        x2 = int(x2 * scale_x)
-        y2 = int(y2 * scale_y)
+        # 截取并保存图片（使用缩放后的坐标）
         # 截取img的矩形区域
-        cropped_img = img[y1:y2, x1:x2]
+        cropped_img = img[scaled_y1:scaled_y2, scaled_x1:scaled_x2]
         # 保存图片
         image_path = os.path.join(output_dir, image_name)
         cv2.imwrite(image_path, cropped_img)
