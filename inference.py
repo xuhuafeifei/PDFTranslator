@@ -195,7 +195,7 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}'
 
         # 替换第一个匹配（避免重复替换）
-        result = result.replace(old_tag, new_tag, 1).replace(fig_name, "", 1)
+        result = result.replace(fig_name, "", 1).replace(old_tag, new_tag, 1)
         print(f"  替换: {old_tag} -> {new_tag}")
 
         print(f"截取并保存图片...")
