@@ -7,6 +7,7 @@ import re
 import math 
 import cv2 
 import argparse
+from pdf_to_image import convert_pdf_to_images_temp, PDFToImageConverter
 
 
 def inference(img_url, prompt, system_prompt="You are a helpful assistant"):
@@ -130,13 +131,24 @@ def plot_bbox(img_path, pred, input_height, input_width, output_path):
 
     cv2.imwrite(output_path, img)
 
+def write_prediction(prediction: str, output_path: str):
+    with open(output_path, 'w') as f:
+        f.write(prediction)
+    prediction = qwenvl_pred_cast_tag(prediction)
+    with open(output_path + ".case_tag", 'w') as f:
+        f.write(prediction)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Logics-Parsing for document parsing and visualize the output.")
 
     parser.add_argument("--model_path", type=str, required=True, 
                         help="Path to the directory containing the pre-trained model and processor.")
-    parser.add_argument("--image_path", type=str, required=True, 
-                        help="Path to the input image file for parsing.")
+    # 创建互斥参数组，必须选择其中一个
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--image_path", type=str,
+                            help="Path to the input image file for parsing.")
+    input_group.add_argument("--pdf_path", type=str,
+                            help="Path to the input pdf file for parsing.")
     parser.add_argument("--output_path", type=str, required=True, 
                         help="Path to save the prediction.")
     parser.add_argument("--prompt", type=str, default="QwenVL HTML", 
@@ -147,21 +159,32 @@ if __name__ == "__main__":
     
 
     model_path = args.model_path
-    image_path = args.image_path
     prompt = args.prompt
     output_path =  args.output_path
-    
+
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="cuda")
     print("model loaded")
     processor = AutoProcessor.from_pretrained(model_path)
-    prediction, input_height, input_width = inference(image_path, prompt)
+    print("processor loaded")
 
-    output_img_path = image_path.split(".")[0]+"_vis.png"
-    plot_bbox(image_path, prediction, input_height, input_width, output_img_path)
-    with open(output_path, 'w') as f:
-        f.write(prediction)
-    # prediction = qwenvl_pred_cast_tag(prediction)
-    print(prediction)
-    
+    if args.image_path:
+        image_path = args.image_path
+        prediction, _, _= inference(image_path, prompt)
+
+        write_prediction(prediction, output_path)
+    else:
+        pdf_path = args.pdf_path
+        converter = PDFToImageConverter()
+        convert_temp_path = converter.convert_pdf_to_images_temp(pdf_path)
+        try:
+            prediction_list = []
+            # for循环处理所有内容
+            for temp_path in convert_temp_path:
+                prediction, _, _= inference(temp_path, prompt)
+                prediction_list.append(prediction)
+            write_prediction("\n".join(prediction_list), output_path)
+        finally:
+            converter.cleanup_temp_images(convert_temp_path)
+
 
 

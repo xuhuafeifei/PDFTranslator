@@ -5,3 +5,5 @@ transformers==4.51.0
 accelerate==1.0.0
 flash-attn>=2.4.2
 opencv-python
+pdf2image>=3.1.0
+Pillow>=9.0.0
