@@ -31,7 +31,7 @@ def inference(img_url, prompt, system_prompt="You are a helpful assistant"):
     }
   ]
   text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-  inputs = processor(text=[text], images=[image], padding=True, return_tensors="pt").to('cuda')
+  inputs = processor(text=[text], images=[image], padding=True, return_tensors="pt").to(device_map)
 
   output_ids = model.generate(**inputs, max_new_tokens=8192)
   generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs.input_ids, output_ids)]
@@ -153,7 +153,10 @@ if __name__ == "__main__":
                         help="Path to save the prediction.")
     parser.add_argument("--prompt", type=str, default="QwenVL HTML", 
                         help="The prompt to send to the model. (default: %(default)s)")
-
+    parser.add_argument("--attn", type=str, default="sdpa",
+                        help="The attention implementation to use. (default: %(default)s)")
+    parser.add_argument("--device", type=str, default="cuda",
+                        help="The device to use. (default: %(default)s)")
 
     args = parser.parse_args()
     
@@ -161,8 +164,11 @@ if __name__ == "__main__":
     model_path = args.model_path
     prompt = args.prompt
     output_path =  args.output_path
+    attn = args.attn
+    device = args.device
+    device_map = "cuda" if device == "cuda" else "cpu"
 
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="cuda")
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation=attn, device_map=device_map)
     print("model loaded")
     processor = AutoProcessor.from_pretrained(model_path)
     print("processor loaded")
