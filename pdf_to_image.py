@@ -22,12 +22,12 @@ from typing import List, Optional, Union
 import logging
 
 try:
-    from pdf2image import convert_from_path
+    import fitz  # PyMuPDF
     from PIL import Image
 except ImportError as e:
     raise ImportError(
         "缺少必需的包。请使用以下命令安装："
-        "pip install pdf2image pillow"
+        "pip install PyMuPDF pillow"
     ) from e
 
 # 配置日志
@@ -82,24 +82,26 @@ class PDFToImageConverter:
             temp_dir = tempfile.mkdtemp(prefix='pdf_images_')
             logger.info(f"创建临时目录: {temp_dir}")
 
-            # 将PDF转换为图片
-            images = convert_from_path(
-                pdf_path,
-                dpi=self.dpi,
-                output_folder=temp_dir,
-                fmt=self.output_format.lower()
-            )
-
-            # 获取生成的图片文件列表
+            # 使用PyMuPDF将PDF转换为图片
+            doc = fitz.open(pdf_path)
             image_files = []
-            for i, image in enumerate(images):
-                image_filename = f"page_{i+1:03d}.{self.output_format.lower()}"
+            
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                # 设置缩放矩阵（DPI转换）
+                zoom = self.dpi / 72.0  # 72是PDF的默认DPI
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                
+                # 保存图片
+                image_filename = f"page_{page_num+1:03d}.{self.output_format.lower()}"
                 image_path = Path(temp_dir) / image_filename
-                image.save(image_path, self.output_format)
+                pix.save(str(image_path))
                 image_files.append(str(image_path))
                 logger.info(f"保存图片: {image_path}")
-
-            logger.info(f"成功转换 {len(images)} 页为图片")
+            
+            doc.close()
+            logger.info(f"成功转换 {len(doc)} 页为图片")
             return image_files
 
         except Exception as e:
@@ -151,19 +153,26 @@ class PDFToImageConverter:
             filename_prefix = pdf_path.stem
 
         try:
-            # 将PDF转换为图片
-            images = convert_from_path(pdf_path, dpi=self.dpi)
-
-            # 保存图片到输出目录
+            # 使用PyMuPDF将PDF转换为图片
+            doc = fitz.open(pdf_path)
             saved_files = []
-            for i, image in enumerate(images):
-                image_filename = f"{filename_prefix}_page_{i+1:03d}.{self.output_format.lower()}"
+            
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                # 设置缩放矩阵（DPI转换）
+                zoom = self.dpi / 72.0  # 72是PDF的默认DPI
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                
+                # 保存图片到输出目录
+                image_filename = f"{filename_prefix}_page_{page_num+1:03d}.{self.output_format.lower()}"
                 image_path = output_dir / image_filename
-                image.save(image_path, self.output_format)
+                pix.save(str(image_path))
                 saved_files.append(str(image_path))
                 logger.info(f"保存图片: {image_path}")
-
-            logger.info(f"成功转换 {len(images)} 页为图片到 {output_dir}")
+            
+            doc.close()
+            logger.info(f"成功转换 {len(doc)} 页为图片到 {output_dir}")
             return saved_files
 
         except Exception as e:
