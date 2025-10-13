@@ -171,6 +171,9 @@ if __name__ == "__main__":
     attn = args.attn
     device = args.device
     device_map = "cuda" if device == "cuda" else "cpu"
+    print(attn)
+    print(device)
+    print(device_map)
 
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation=attn, device_map=device_map)
     print("model loaded")
