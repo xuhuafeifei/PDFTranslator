@@ -108,6 +108,89 @@ def smart_resize(
         w_bar = math.ceil(width * beta / factor) * factor
     return h_bar, w_bar
 
+'''
+获取图片, 并替换预测结果中的img标签为includegraphics标签, 并保存图片
+img: 图片
+scale: 缩放
+html_content: HTML内容
+page_num: 页码
+output_dir: 输出目录
+image_name_template: 图片名称模板
+'''
+def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page_num, output_dir, image_name_template="page_{page_num}_{number}.png"):
+    """
+    将自闭合的img标签替换为包含includegraphics的完整标签
+    
+    参数:
+        html_content: HTML内容
+        image_path_template: 图片路径模板，{page_num}会被替换为页码
+    """
+    
+    # 匹配自闭合的img标签
+    pattern = re.compile(r'<img\s+data-bbox="(\d+),(\d+),(\d+),(\d+)"\s*/>')
+    
+    # 找到所有匹配
+    matches = pattern.findall(html_content)
+    print(f"找到 {len(matches)} 个img标签")
+    
+    # 逐个处理每个匹配
+    num = 1
+    result = html_content
+    for i, match in enumerate(matches):
+        x1, y1, x2, y2 = match
+        print(f"处理第 {i+1} 个img标签: 坐标({x1},{y1},{x2},{y2})")
+        
+        # 生成图片路径
+        image_name = image_name_template.format(page_num=page_num, count=num)
+        print(f"  页码: {page_num}, 序号: {num}, 图片路径: {image_name}")
+        
+        # 构建新的标签
+        old_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}"/>'
+        new_tag = f'<img data-bbox="{x1},{y1},{x2},{y2}">\\includegraphics{{{image_name}}}</img>'
+        
+        # 替换第一个匹配（避免重复替换）
+        result = result.replace(old_tag, new_tag, 1)
+        print(f"  替换: {old_tag} -> {new_tag}")
+
+        print(f"截取并保存图片...")
+        # 截取并保存图片
+        x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+        # 确定缩放
+        scale_x, scale_y = scale
+        x1 = int(x1 * scale_x)
+        y1 = int(y1 * scale_y)
+        x2 = int(x2 * scale_x)
+        y2 = int(y2 * scale_y)
+        # 截取img的矩形区域
+        cropped_img = img[y1:y2, x1:x2]
+        # 保存图片
+        image_path = os.path.join(output_dir, image_name)
+        cv2.imwrite(image_path, cropped_img)
+        print(f"截取并保存图片完成...")
+        num += 1
+
+    return result
+
+
+'''
+获取图片, 并替换预测结果中的img标签为includegraphics标签, 并保存图片
+img_path: 图片路径
+pred: 预测结果
+output_path: 输出路径
+input_height: 输入高度
+input_width: 输入宽度
+page_num: 页码
+'''
+def catch_picture_and_replace_prediction(img_path, pred, output_path, input_height, input_width, page_num) -> str: 
+    img = cv2.imread(img_path)
+    img_height, img_width, _ = img.shape
+    scale = (img_width / input_width, img_height / input_height)
+
+    # 取出目录部分，去除output_path最后的文件名
+    output_dir = os.path.dirname(output_path)
+    return replace_img_with_includegraphics_and_save_img(img, scale, pred, page_num, output_dir)
+
+
 def plot_bbox(img_path, pred, input_height, input_width, output_path):
     img = cv2.imread(img_path)
     img_height, img_width, _ = img.shape
@@ -186,9 +269,10 @@ if __name__ == "__main__":
 
     if args.image_path:
         image_path = args.image_path
-        prediction, h, w= inference(image_path, prompt)
-        print(f"写入检测区域图片...")
-        write_plot_bbox(image_path, prediction, h, w)
+        prediction, h, w = inference(image_path, prompt)
+        prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
+        # print(f"写入检测区域图片...")
+        # write_plot_bbox(image_path, prediction, h, w)
         print(f"持久化预测结果...")
         write_prediction(prediction, output_path)
     else:
@@ -201,10 +285,11 @@ if __name__ == "__main__":
             for i, temp_path in enumerate(convert_temp_path):
                 print(f"处理第{i+1}页...")
                 prediction, h, w= inference(temp_path, prompt)
+                prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
-                print(f"写入检测区域图片...")
-                write_plot_bbox(temp_path, prediction, h, w)
+                # print(f"写入检测区域图片...")
+                # write_plot_bbox(temp_path, prediction, h, w)
             print(f"持久化预测结果...")
             write_prediction("\n".join(prediction_list), output_path)
         finally:
