@@ -258,10 +258,6 @@ def plot_bbox(img_path, pred, input_height, input_width, output_path):
     cv2.imwrite(output_path, img)
 
 def write_prediction(prediction: str, output_path: str):
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w') as f:
-        f.write(prediction)
-    
     # 处理预测结果
     prediction = qwenvl_pred_cast_tag(prediction)
     
@@ -313,7 +309,7 @@ def write_prediction(prediction: str, output_path: str):
         filename = filename.rsplit('.', 1)[0]
     
     # maketitle
-    predication = prediction.replace(f"\\begin{{abstract}}", "\\maketitle\n\\begin{{abstract}}")
+    prediction = prediction.replace(f"\\begin{{abstract}}", "\\maketitle\n\\begin{{abstract}}")
     # 生成完整的LaTeX文档
     latex_content = latex_template.format(filename=filename, content=prediction)
     
@@ -375,6 +371,8 @@ if __name__ == "__main__":
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
+        # 去除标签
+        prediction = qwenvl_pred_cast_tag(prediction)
 
         # 翻译预测结果
         try:
@@ -406,7 +404,7 @@ if __name__ == "__main__":
             try:
                 translator.load_model()
                 print(f"翻译预测结果...")
-                prediction_list = [translate_prediction(prediction) for prediction in prediction_list]
+                prediction_list = [translate_prediction(qwenvl_pred_cast_tag(prediction)) for prediction in prediction_list]
             except Exception as e:
                 print(f"翻译预测结果失败: {e}")
             finally:
