@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+
 import logging
 
 class TextTranslator:
@@ -8,7 +9,7 @@ class TextTranslator:
     支持通过输入字符串进行翻译，返回翻译结果
     """
     
-    def __init__(self, model_path=None, model_name="Qwen/Qwen2.5-1.5B-Instruct", device="auto"):
+    def __init__(self, model_path=None, model_name="Qwen/Qwen2.5-7.5B-Instruct", device="auto"):
         """
         初始化翻译器
         
@@ -82,10 +83,10 @@ class TextTranslator:
         try:
             # 构建翻译提示词
             if preserve_format:
-                prompt = f"请将以下{source_lang}翻译成{target_lang}，并保持所有 LaTeX 命令（如 $, \\ , \\begin 等）不变：\n\n{text}\n\n译文："
+                prompt = rf"请将以下{source_lang}翻译成{target_lang}，并保持所有 LaTeX 命令（如 $, \\ , \\begin , \\title, \\section）不变, 只保留翻译内容：\n\n{text}\n\n译文："
             else:
-                prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n译文："
-            
+                prompt = f"请将以下{source_lang}翻译成{target_lang}"
+            print(prompt)
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
             outputs = self.model.generate(**inputs, max_new_tokens=2048)
