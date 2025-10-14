@@ -9,7 +9,7 @@ class TextTranslator:
     支持通过输入字符串进行翻译，返回翻译结果
     """
     
-    def __init__(self, model_path=None, model_name="Qwen/Qwen2.5-7.5B-Instruct", device="auto"):
+    def __init__(self, model_path=None, model_name="deepseek-ai/DeepSeek-Prover-V2-7B", device="auto"):
         """
         初始化翻译器
         
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # 命令行参数解析
     parser = argparse.ArgumentParser(description="文本翻译器")
     parser.add_argument("--model_path", type=str, help="本地模型路径")
-    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-1.5B-Instruct", help="在线模型名称")
+    parser.add_argument("--model_name", type=str, default="deepseek-ai/DeepSeek-Prover-V2-7B", help="在线模型名称")
     parser.add_argument("--device", type=str, default="auto", help="设备类型")
     parser.add_argument("--text", type=str, help="要翻译的文本")
     
