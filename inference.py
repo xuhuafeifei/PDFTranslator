@@ -310,10 +310,7 @@ def write_plot_bbox(image_path, prediction, h, w):
     plot_bbox(image_path, prediction, h, w, output_img_path)
 
 def translate_prediction(prediction: str) -> str:
-    translator = TextTranslator()
-    translator.load_model()
     result = translator.translate(prediction)
-    translator.unload_model()
     return result
 
 if __name__ == "__main__":
@@ -351,16 +348,28 @@ if __name__ == "__main__":
     print(device_map)
 
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation=attn, device_map=device_map)
+    translator = TextTranslator()
     print("model loaded")
     processor = AutoProcessor.from_pretrained(model_path)
     print("processor loaded")
 
     if args.image_path:
+        # 图片推理
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
-        print(f"翻译预测结果...")
-        prediction = translate_prediction(prediction)
+
+        # 翻译预测结果
+        try:
+            print(f"翻译预测结果...")
+            translator.load_model()
+            prediction = translate_prediction(prediction)
+        except Exception as e:
+            print(f"翻译预测结果失败: {e}")
+        finally:
+            # 卸载翻译模型
+            translator.unload_model()
+
         print(f"持久化预测结果...")
         write_prediction(prediction, output_path)
     else:
@@ -369,15 +378,23 @@ if __name__ == "__main__":
         convert_temp_path = converter.convert_pdf_to_images_temp(pdf_path)
         try:
             prediction_list = []
-            # for循环处理所有内容
+            # for循环pdf解析
             for i, temp_path in enumerate(convert_temp_path):
                 print(f"处理第{i+1}页...")
                 prediction, h, w= inference(temp_path, prompt)
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
-                print(f"翻译预测结果...")
-                prediction = translate_prediction(prediction)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
+            # 翻译预测结果
+            try:
+                translator.load_model()
+                print(f"翻译预测结果...")
+                prediction_list = [translate_prediction(prediction) for prediction in prediction_list]
+            except Exception as e:
+                print(f"翻译预测结果失败: {e}")
+            finally:
+                # 卸载翻译模型
+                translator.unload_model()
             print(f"持久化预测结果...")
             write_prediction("\n".join(prediction_list), output_path)
         finally:
