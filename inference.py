@@ -258,9 +258,6 @@ def plot_bbox(img_path, pred, input_height, input_width, output_path):
     cv2.imwrite(output_path, img)
 
 def write_prediction(prediction: str, output_path: str):
-    # 处理预测结果
-    prediction = qwenvl_pred_cast_tag(prediction)
-    
     # 添加LaTeX模板
     latex_template = """% !TEX root = {filename}
 % !TEX program = xelatex

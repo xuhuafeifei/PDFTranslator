@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+
 import logging
 
 class TextTranslator:
@@ -8,7 +9,7 @@ class TextTranslator:
     支持通过输入字符串进行翻译，返回翻译结果
     """
     
-    def __init__(self, model_path=None, model_name="deepseek-ai/DeepSeek-Prover-V2-7B", device="auto"):
+    def __init__(self, model_path=None, model_name="Qwen/Qwen2.5-7.5B-Instruct", device="cuda"):
         """
         初始化翻译器
         
@@ -84,9 +85,8 @@ class TextTranslator:
             # 构建翻译提示词
             if preserve_format:
 #                 prompt = f"""请将以下{source_lang}翻译成{target_lang}，要求：
-# 0. 遇到\\title, \\author, \\begin{{abstrat}}, \\end{{abstract}}标签, 不要翻译, 需要保留英文内容
 # 1. 保持所有LaTeX命令不变（如 $, \\, \\begin, \\end, \\section, \\title, \\includegraphics等）
-# 2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}, \\title, \\author等）
+# 2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}等）
 # 3. 保持所有数学公式不变（如 $\\alpha$, $$...$$等）
 # 4. 保持所有换行符和段落结构不变
 # 5. 只输出翻译后的文本
@@ -95,18 +95,18 @@ class TextTranslator:
 # {text}
 # 译文:
 # """
-                prompt = f"""请将以下 LaTeX 文本从中文/英文翻译成目标语言（例如中文翻译成英文，或英文翻译成中文），要求：
-1. 保留所有 LaTeX 命令不变（如 \title, \author, \begin, \end, \section, \includegraphics 等）。
-2. 保留所有 LaTeX 环境结构不变（如 \begin{{abstract}}, \begin{{figure}}, \begin{{center}} 等）。
-3. 保留所有数学公式不变（如 $...$, \[...\]）。
-4. 仅翻译自然语言文本内容。
-5. 翻译后文本应适合直接用于 LaTeX 文档，无需额外调整。
-
-原文:
+                user_prompt = f'''请将以下 LaTeX 文本从英文翻译成中文，严格遵循以下要求：
+1. 保留所有 LaTeX 命令及参数不变（例如 \\title, \\author, \\begin, \end, \section, \includegraphics 等）。
+2. 保留所有 LaTeX 环境结构不变（例如 \\begin{{abstract}}, \\begin{{figure}}, \\begin{{center}} 等）。
+3. 保留所有数学公式原样（包括 $...$, \[...\], \( ... \), \\begin{{equation}} 等）。
+原文：
 {text}
 
-译文:
-"""
+译文：
+'''
+                system = "System: 你是一个 LaTeX 翻译器，只输出翻译后的 LaTeX，不输出任何解释。"
+                user = f"User: {user_prompt}"
+                prompt = system + "\n" + user + "\nAssistant:"
             else:
                 prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n"
             
@@ -114,15 +114,26 @@ class TextTranslator:
             
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-            outputs = self.model.generate(**inputs, max_new_tokens=max_tokens)
+            outputs = self.model.generate(
+                **inputs, 
+                max_new_tokens=max_tokens
+            )
             translated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
             # 提取翻译结果（去掉提示词部分）
-            if "译文:" in translated:
-                translated = translated.split("译文:")[-1].strip()
+            if "译文：" in translated:
+                translated = translated.split("译文：")[-1].strip()
             
             self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}")
-            return translated
+
+            def remove_first_last_lines(text):
+                """去除第一行和最后一行"""
+                lines = text.splitlines()
+                if len(lines) <= 2:
+                    return ""  # 如果只有2行或更少，返回空字符串
+                return '\n'.join(lines[1:-1])
+
+            return remove_first_last_lines(translated)
             
         except Exception as e:
             self.logger.error(f"翻译失败: {e}")
@@ -171,7 +182,7 @@ if __name__ == "__main__":
     # 命令行参数解析
     parser = argparse.ArgumentParser(description="文本翻译器")
     parser.add_argument("--model_path", type=str, help="本地模型路径")
-    parser.add_argument("--model_name", type=str, default="deepseek-ai/DeepSeek-Prover-V2-7B", help="在线模型名称")
+    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-7.5B-Instruct", help="在线模型名称")
     parser.add_argument("--device", type=str, default="auto", help="设备类型")
     parser.add_argument("--text", type=str, help="要翻译的文本")
     
