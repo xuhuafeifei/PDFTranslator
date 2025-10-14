@@ -60,7 +60,7 @@ class TextTranslator:
             self.logger.error(f"模型加载失败: {e}")
             raise
     
-    def translate(self, text, source_lang="英文", target_lang="中文", preserve_format=True):
+    def translate(self, text, source_lang="英文", target_lang="中文", preserve_format=True, max_tokens=None):
         """
         翻译文本
         
@@ -69,6 +69,7 @@ class TextTranslator:
             source_lang: 源语言
             target_lang: 目标语言
             preserve_format: 是否保持格式（LaTeX命令等）
+            max_tokens: 最大生成token数，None时根据文本长度自动调整
         
         返回:
             翻译后的文本
@@ -96,16 +97,27 @@ class TextTranslator:
             else:
                 prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n"
             
+            # 动态调整max_tokens
+            if max_tokens is None:
+                # 根据输入文本长度动态调整
+                text_length = len(text)
+                if text_length < 1000:
+                    max_tokens = 2048
+                elif text_length < 3000:
+                    max_tokens = 4096
+                else:
+                    max_tokens = 8192
+            
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-            outputs = self.model.generate(**inputs, max_new_tokens=2048)
+            outputs = self.model.generate(**inputs, max_new_tokens=max_tokens)
             translated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
             # 提取翻译结果（去掉提示词部分）
             if "译文：" in translated:
                 translated = translated.split("译文：")[-1].strip()
             
-            self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}")
+            self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}")
             return translated
             
         except Exception as e:
