@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
 import logging
 
 class TextTranslator:
@@ -84,15 +83,28 @@ class TextTranslator:
         try:
             # 构建翻译提示词
             if preserve_format:
-                prompt = f"""请将以下{source_lang}翻译成{target_lang}，要求：
-1. 保持所有LaTeX命令不变（如 $, \\, \\begin, \\end, \\section, \\title, \\includegraphics等）
-2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}等）
-3. 保持所有数学公式不变（如 $\\alpha$, $$...$$等）
-4. 保持所有换行符和段落结构不变
-5. 只输出翻译后的文本
+#                 prompt = f"""请将以下{source_lang}翻译成{target_lang}，要求：
+# 0. 遇到\\title, \\author, \\begin{{abstrat}}, \\end{{abstract}}标签, 不要翻译, 需要保留英文内容
+# 1. 保持所有LaTeX命令不变（如 $, \\, \\begin, \\end, \\section, \\title, \\includegraphics等）
+# 2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}, \\title, \\author等）
+# 3. 保持所有数学公式不变（如 $\\alpha$, $$...$$等）
+# 4. 保持所有换行符和段落结构不变
+# 5. 只输出翻译后的文本
 
-原文：
+# 原文：
+# {text}
+# 译文:
+# """
+                prompt = f"""请将以下 LaTeX 文本从中文/英文翻译成目标语言（例如中文翻译成英文，或英文翻译成中文），要求：
+1. 保留所有 LaTeX 命令不变（如 \title, \author, \begin, \end, \section, \includegraphics 等）。
+2. 保留所有 LaTeX 环境结构不变（如 \begin{{abstract}}, \begin{{figure}}, \begin{{center}} 等）。
+3. 保留所有数学公式不变（如 $...$, \[...\]）。
+4. 仅翻译自然语言文本内容。
+5. 翻译后文本应适合直接用于 LaTeX 文档，无需额外调整。
+
+原文:
 {text}
+
 译文:
 """
             else:
@@ -106,8 +118,8 @@ class TextTranslator:
             translated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
             # 提取翻译结果（去掉提示词部分）
-            if "译文：" in translated:
-                translated = translated.split("译文：")[-1].strip()
+            if "译文:" in translated:
+                translated = translated.split("译文:")[-1].strip()
             
             self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}")
             return translated
