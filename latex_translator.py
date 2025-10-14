@@ -1,12 +1,23 @@
 import re
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+import os
 
 class LaTeXTranslator:
-    def __init__(self, model_name="facebook/mbart-large-50-many-to-many-mmt", device="auto"):
-        self.device = device
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device if device != "auto" else "cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self, model_path=None, model_name="facebook/mbart-large-50-many-to-many-mmt", device="auto"):
+        """
+        model_path: 本地模型路径（优先使用）
+        model_name: Hugging Face 模型名（当本地不存在时下载）
+        """
+        self.device = device if device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
+        self.model_path = model_path
+        self.model_name = model_name
+
+        # 优先使用本地模型
+        load_path = model_path if model_path and os.path.exists(model_path) else model_name
+
+        self.tokenizer = AutoTokenizer.from_pretrained(load_path)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(load_path).to(self.device)
 
     def _extract_latex(self, text):
         """
@@ -48,7 +59,8 @@ class LaTeXTranslator:
 
 
 if __name__ == "__main__":
-    translator = LaTeXTranslator()
+    # 如果本地有模型路径就传入，没有就用默认远程模型
+    translator = LaTeXTranslator(model_path="./local_mbart_model")
 
     sample_text = r"""
     \section{Introduction}
