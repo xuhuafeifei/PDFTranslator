@@ -268,36 +268,43 @@ def write_prediction(prediction: str, output_path: str):
     # 添加LaTeX模板
     latex_template = """% !TEX root = {filename}
 % !TEX program = xelatex
+\\documentclass[12pt,a4paper]{{report}} % 也可以改成 report 或 book
 
-\\documentclass{{article}}
-\\usepackage{{fontspec}}
-\\usepackage{{amsmath}}
-\\usepackage{{amsfonts}}
-\\usepackage{{amssymb}}
-\\usepackage{{graphicx}}
-\\usepackage{{geometry}}
-\\usepackage{{hyperref}}
+% ----------------------
+% 中文支持
+% ----------------------
+\\usepackage[UTF8]{{ctex}}          % 中文支持
+\\setCJKmainfont{{Songti SC}}
+\\setCJKsansfont{{Heiti SC}}
+\\setCJKmonofont{{STFangsong}}
+\\setmainfont{{Times New Roman}}     % 英文字体
+\\setsansfont{{Arial}}               % 英文无衬线
+\\setmonofont{{Courier New}}         % 英文等宽
 
-% 设置中文字体
-\\setmainfont{{Times New Roman}}
-\\setsansfont{{Arial}}
-\\setmonofont{{Courier New}}
+% ----------------------
+% 数学和符号
+% ----------------------
+\\usepackage{{amsmath, amssymb, amsfonts}} 
+\\usepackage{{geometry}}            % 页面边距
+\\geometry{{left=3cm, right=3cm, top=2.5cm, bottom=2.5cm}}
 
-% 设置页面边距
-\\geometry{{a4paper, margin=2.5cm}}
+% ----------------------
+% 其他常用宏包
+% ----------------------
+\\usepackage{{graphicx}}            % 图片
+\\usepackage{{hyperref}}            % 超链接
+\\usepackage{{caption}}             % 图表标题
 
-% 设置超链接样式
-\\hypersetup{{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=cyan,
-}}
-
+% ----------------------
+% 文档开始
+% ----------------------
 \\begin{{document}}
 
 {content}
 
+% ----------------------
+% 文档结束
+% ----------------------
 \\end{{document}}"""
     
     # 获取文件名（不含扩展名）
@@ -305,6 +312,8 @@ def write_prediction(prediction: str, output_path: str):
     if '.' in filename:
         filename = filename.rsplit('.', 1)[0]
     
+    # maketitle
+    predication = prediction.replace(f"\\begin{{abstract}}", "\\maketitle\n\\begin{{abstract}}")
     # 生成完整的LaTeX文档
     latex_content = latex_template.format(filename=filename, content=prediction)
     
