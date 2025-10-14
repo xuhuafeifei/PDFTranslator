@@ -89,10 +89,11 @@ class TextTranslator:
 2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}等）
 3. 保持所有数学公式不变（如 $\\alpha$, $$...$$等）
 4. 保持所有换行符和段落结构不变
-5. 只翻译纯文本内容，不要添加任何解释或注释, 这点最重要
+5. 只输出翻译后的文本
 
 原文：
 {text}
+译文:
 """
             else:
                 prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n"
