@@ -8,6 +8,7 @@ import math
 import cv2 
 import argparse
 from pdf_to_image import convert_pdf_to_images_temp, PDFToImageConverter
+from translator import TextTranslator
 
 
 def inference(img_url, prompt, system_prompt="You are a helpful assistant"):
@@ -260,13 +261,60 @@ def write_prediction(prediction: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         f.write(prediction)
+    
+    # 处理预测结果
     prediction = qwenvl_pred_cast_tag(prediction)
-    with open(output_path + ".case_tag", 'w') as f:
-        f.write(prediction)
+    
+    # 添加LaTeX模板
+    latex_template = """% !TEX root = {filename}
+
+\\documentclass{{article}}
+\\usepackage[utf8]{{inputenc}}
+\\usepackage{{amsmath}}
+\\usepackage{{amsfonts}}
+\\usepackage{{amssymb}}
+\\usepackage{{graphicx}}
+\\usepackage{{geometry}}
+\\usepackage{{hyperref}}
+
+% 设置页面边距
+\\geometry{{a4paper, margin=2.5cm}}
+
+% 设置超链接样式
+\\hypersetup{{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}}
+
+\\begin{{document}}
+
+{content}
+
+\\end{{document}}"""
+    
+    # 获取文件名（不含扩展名）
+    filename = os.path.basename(output_path)
+    if '.' in filename:
+        filename = filename.rsplit('.', 1)[0]
+    
+    # 生成完整的LaTeX文档
+    latex_content = latex_template.format(filename=filename, content=prediction)
+    
+    with open(output_path + ".case_tag.tex", 'w', encoding='utf-8') as f:
+        f.write(latex_content)
 
 def write_plot_bbox(image_path, prediction, h, w):
     output_img_path = image_path.split(".")[0]+"_vis.png"
     plot_bbox(image_path, prediction, h, w, output_img_path)
+
+def translate_prediction(prediction: str) -> str:
+    translator = TextTranslator()
+    translator.load_model()
+    result = translator.translate(prediction)
+    translator.unload_model()
+    return result
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Logics-Parsing for document parsing and visualize the output.")
@@ -311,6 +359,8 @@ if __name__ == "__main__":
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
+        print(f"翻译预测结果...")
+        prediction = translate_prediction(prediction)
         print(f"持久化预测结果...")
         write_prediction(prediction, output_path)
     else:
@@ -324,6 +374,8 @@ if __name__ == "__main__":
                 print(f"处理第{i+1}页...")
                 prediction, h, w= inference(temp_path, prompt)
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
+                print(f"翻译预测结果...")
+                prediction = translate_prediction(prediction)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
             print(f"持久化预测结果...")
