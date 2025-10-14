@@ -267,15 +267,21 @@ def write_prediction(prediction: str, output_path: str):
     
     # 添加LaTeX模板
     latex_template = """% !TEX root = {filename}
+% !TEX program = xelatex
 
 \\documentclass{{article}}
-\\usepackage[utf8]{{inputenc}}
+\\usepackage{{fontspec}}
 \\usepackage{{amsmath}}
 \\usepackage{{amsfonts}}
 \\usepackage{{amssymb}}
 \\usepackage{{graphicx}}
 \\usepackage{{geometry}}
 \\usepackage{{hyperref}}
+
+% 设置中文字体
+\\setmainfont{{Times New Roman}}
+\\setsansfont{{Arial}}
+\\setmonofont{{Courier New}}
 
 % 设置页面边距
 \\geometry{{a4paper, margin=2.5cm}}
@@ -332,6 +338,8 @@ if __name__ == "__main__":
                         help="The attention implementation to use. (default: %(default)s)")
     parser.add_argument("--device", type=str, default="cuda",
                         help="The device to use. (default: %(default)s)")
+    parser.add_argument("--translator_model_path", type=str, default=None,
+                        help="Path to the translator model (optional)")
 
     args = parser.parse_args()
     
@@ -348,7 +356,7 @@ if __name__ == "__main__":
     print(device_map)
 
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation=attn, device_map=device_map)
-    translator = TextTranslator()
+    translator = TextTranslator(model_path=args.translator_model_path)
     print("model loaded")
     processor = AutoProcessor.from_pretrained(model_path)
     print("processor loaded")

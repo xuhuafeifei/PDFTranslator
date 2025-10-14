@@ -8,14 +8,16 @@ class TextTranslator:
     支持通过输入字符串进行翻译，返回翻译结果
     """
     
-    def __init__(self, model_name="Qwen/Qwen2.5-1.5B-Instruct", device="auto"):
+    def __init__(self, model_path=None, model_name="Qwen/Qwen2.5-1.5B-Instruct", device="auto"):
         """
         初始化翻译器
         
         参数:
-            model_name: 模型名称
+            model_path: 本地模型路径（优先使用）
+            model_name: 模型名称（当model_path为None时使用）
             device: 设备类型
         """
+        self.model_path = model_path
         self.model_name = model_name
         self.device = device
         self.model = None
@@ -33,13 +35,20 @@ class TextTranslator:
             return
             
         try:
-            self.logger.info(f"正在加载模型: {self.model_name}")
+            # 确定使用的模型路径
+            if self.model_path:
+                model_to_load = self.model_path
+                self.logger.info(f"正在加载本地模型: {self.model_path}")
+            else:
+                model_to_load = self.model_name
+                self.logger.info(f"正在加载在线模型: {self.model_name}")
+            
             self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name, 
+                model_to_load, 
                 trust_remote_code=True
             )
             self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_name,
+                model_to_load,
                 torch_dtype=torch.float16,
                 device_map=self.device,
                 trust_remote_code=True
@@ -131,6 +140,17 @@ class TextTranslator:
 
 # 使用示例
 if __name__ == "__main__":
+    import argparse
+    
+    # 命令行参数解析
+    parser = argparse.ArgumentParser(description="文本翻译器")
+    parser.add_argument("--model_path", type=str, help="本地模型路径")
+    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-1.5B-Instruct", help="在线模型名称")
+    parser.add_argument("--device", type=str, default="auto", help="设备类型")
+    parser.add_argument("--text", type=str, help="要翻译的文本")
+    
+    args = parser.parse_args()
+    
     # 创建翻译器实例
     translator = TextTranslator()
     
