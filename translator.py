@@ -83,10 +83,20 @@ class TextTranslator:
         try:
             # 构建翻译提示词
             if preserve_format:
-                prompt = rf"请将以下{source_lang}翻译成{target_lang}，并保持所有 LaTeX 命令（如 $, \\ , \\begin , \\title, \\section）不变, 只保留翻译内容：\n\n{text}\n\n译文："
+                prompt = f"""请将以下{source_lang}翻译成{target_lang}，要求：
+1. 保持所有LaTeX命令不变（如 $, \\, \\begin, \\end, \\section, \\title, \\includegraphics等）
+2. 保持所有LaTeX环境不变（如 \\begin{{center}}, \\begin{{figure}}等）
+3. 保持所有数学公式不变（如 $\\alpha$, $$...$$等）
+4. 保持所有换行符和段落结构不变
+5. 只翻译纯文本内容，不要添加任何解释或注释
+
+原文：
+{text}
+
+译文："""
             else:
-                prompt = f"请将以下{source_lang}翻译成{target_lang}"
-            print(prompt)
+                prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n译文："
+            
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
             outputs = self.model.generate(**inputs, max_new_tokens=2048)
