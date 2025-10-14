@@ -92,10 +92,9 @@ class TextTranslator:
 
 原文：
 {text}
-
-译文："""
+"""
             else:
-                prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n译文："
+                prompt = f"请将以下{source_lang}翻译成{target_lang}：\n\n{text}\n\n"
             
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
