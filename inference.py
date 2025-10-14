@@ -309,7 +309,7 @@ def write_prediction(prediction: str, output_path: str):
         filename = filename.rsplit('.', 1)[0]
     
     # maketitle
-    prediction = prediction.replace(f"\\begin{{abstract}}", "\\maketitle\n\\begin{{abstract}}")
+    prediction = prediction.replace(f"\\begin{{abstract}}", "\\maketitle\n\\begin{abstract}")
     # 生成完整的LaTeX文档
     latex_content = latex_template.format(filename=filename, content=prediction)
     
@@ -404,14 +404,14 @@ if __name__ == "__main__":
             try:
                 translator.load_model()
                 print(f"翻译预测结果...")
-                prediction_list = [translate_prediction(qwenvl_pred_cast_tag(prediction)) for prediction in prediction_list]
+                prediction_list = [qwenvl_pred_cast_tag(prediction) for prediction in prediction_list]
             except Exception as e:
                 print(f"翻译预测结果失败: {e}")
             finally:
                 # 卸载翻译模型
                 translator.unload_model()
             print(f"持久化预测结果...")
-            write_prediction("\n".join(prediction_list), output_path)
+            write_prediction(translate_prediction("\n".join(prediction_list)), output_path)
         finally:
             converter.cleanup_temp_images(convert_temp_path)
 
