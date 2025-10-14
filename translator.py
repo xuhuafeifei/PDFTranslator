@@ -99,14 +99,20 @@ class TextTranslator:
             
             # 动态调整max_tokens
             if max_tokens is None:
-                # 根据输入文本长度动态调整
-                text_length = len(text)
-                if text_length < 1000:
-                    max_tokens = 2048
-                elif text_length < 3000:
-                    max_tokens = 4096
+                # 根据输入文本的token数量动态调整
+                input_tokens = self.tokenizer.encode(text, add_special_tokens=False)
+                token_count = len(input_tokens)
+                
+                print("输入文本 token_count: ", str(token_count))
+                # 根据输入长度设置合理的生成token数（输入输出比例约1:1.5）
+                if token_count < 500:
+                    max_tokens = int(token_count * 1.5)      # 输入500，最多生成750
+                elif token_count < 1500:
+                    max_tokens = int(token_count * 1.5)      # 输入1000，最多生成1500
                 else:
-                    max_tokens = 8192
+                    max_tokens = int(token_count * 1.5)      # 输入2000，最多生成3000
+                
+                self.logger.info(f"输入文本: {len(text)}字符, {token_count}tokens, 设置max_new_tokens: {max_tokens}")
             
             # 执行翻译
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
