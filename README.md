@@ -43,15 +43,15 @@ python download_model.py
 # 执行推理
 python inference.py \
     --model_path weights/Logics-Parsing \
-    --translator_path weights/Logics-Parsing \
+    --translator_path weights/Qwen3 \
     --output_path 输出路径, 需要指定文件名 \
     --pdf_path 输入pdf文件路径
     --attn flash_attention_2
 ```
 
 需要额外解释的是
-- --model_path 输入的是download_model下载的第一个模型, Qwen2.5视觉推理模型
-- --translator_path 输入的是download_model下载的第二个模型, Qwen3文本推理模型
+- --model_path 输入的是download_model下载的第一个模型, Qwen2.5视觉推理模型所在路径
+- --translator_path 输入的是download_model下载的第二个模型, Qwen3文本推理模型所在路径
 - --output_path 指定输出路径, 例如output/result, 表示翻译内容最终会在output目录下写入`result.case_tag.tex`文件, 其中`result.case_tag.tex`是对result进行额外处理后得到的文件名
 - --pdf_path 输入pdf路径, 改参数可以修改为--image_path, 输入单个图片. --pdf_path/--image_path选择其一即可
 - --attn 指定视觉模型推理时的注意力机制实现逻辑. 可选择不填, 默认`sdpa`. 如果想要指定`flash_attention_2`, 必须下载`flash-attention>=2.4.2`. 但flash-attention下载需要本地编译, 可以从`https://github.com/mjun0812/flash-attention-prebuild-wheels/releases`网站选择下载适合自己配置的已经编译完成的whl文件, 然后执行pip install [预下载的whl文件]即可完成安装
