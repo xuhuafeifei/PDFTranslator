@@ -1,7 +1,7 @@
 torch==2.5.1
 torchvision==0.20.1 
 torchaudio==2.5.1
-transformers==4.51.0
+transformers==4.57.1
 accelerate==1.0.0
 opencv-python
 PyMuPDF>=1.23.0

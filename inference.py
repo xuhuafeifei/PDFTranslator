@@ -374,7 +374,11 @@ if __name__ == "__main__":
         # 图片推理
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
-        unload_pdf_parser_model(model, processor)
+        # 卸载模型
+        del model
+        del processor
+        torch.cuda.empty_cache()
+        print("模型已卸载，显存已释放...")
 
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
         # 去除标签
@@ -385,6 +389,7 @@ if __name__ == "__main__":
             print(f"翻译预测结果...")
             translator.load_model()
             prediction = translate_prediction(prediction)
+
         except Exception as e:
             print(f"翻译预测结果失败: {e}")
         finally:
@@ -406,7 +411,12 @@ if __name__ == "__main__":
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
-            unload_pdf_parser_model(model, processor)
+
+                # 卸载模型
+                del model
+                del processor
+                torch.cuda.empty_cache()
+                print("模型已卸载，显存已释放...")
 
             # 翻译预测结果
             try:
