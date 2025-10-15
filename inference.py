@@ -321,6 +321,13 @@ def translate_prediction(prediction: str) -> str:
     result = translator.translate(prediction)
     return result
 
+def unload_pdf_parser_model(model, processor):
+    # 卸载视觉模型释放显存
+    del model
+    del processor
+    torch.cuda.empty_cache()
+    print("视觉模型已卸载，显存已释放。")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Logics-Parsing for document parsing and visualize the output.")
 
@@ -367,6 +374,8 @@ if __name__ == "__main__":
         # 图片推理
         image_path = args.image_path
         prediction, h, w = inference(image_path, prompt)
+        unload_pdf_parser_model(model, processor)
+
         prediction = catch_picture_and_replace_prediction(image_path, prediction, output_path, h, w, 1)
         # 去除标签
         prediction = qwenvl_pred_cast_tag(prediction)
@@ -397,6 +406,8 @@ if __name__ == "__main__":
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
+            unload_pdf_parser_model(model, processor)
+
             # 翻译预测结果
             try:
                 translator.load_model()
