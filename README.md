@@ -57,7 +57,7 @@ python inference.py \
 - --attn 指定视觉模型推理时的注意力机制实现逻辑. 可选择不填, 默认`sdpa`. 如果想要指定`flash_attention_2`, 必须下载`flash-attention>=2.4.2`. 但flash-attention下载需要本地编译, 可以从`https://github.com/mjun0812/flash-attention-prebuild-wheels/releases`网站选择下载适合自己配置的已经编译完成的whl文件, 然后执行pip install [预下载的whl文件]即可完成安装
 
 ## 推理结果
-项目会将大模型推理得到的数据写入 --output_path指定的文件目录之下. 用于只需用寻找对应的.case_tag.tex后缀的文件即可. 如果output_path目录下还有图片, 请不要删除, 否则后续pdf编译则无法正常获取图片
+项目会将大模型推理得到的数据写入 --output_path指定的文件目录之下. 只需用寻找对应的.case_tag.tex后缀的文件即可使用. 如果output_path目录下还有图片, 请不要删除, 否则后续pdf编译则无法正常获取图片
 
 针对tex文件, 需要用户手动用latex进行编译, 具体指令为`xelatex [指定的.tex文件]`.
 
