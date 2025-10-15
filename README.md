@@ -18,8 +18,11 @@
 ## 开发环境
 
 python 3.10
+
 torch 2.5.1
+
 cuda 11.8
+
 flash-attention >= 2.4.2 [可以不下载]
 
 显存 24G为最佳, 计算能力最好8.0以上(否则attention机制无法使用`flash_attention_2`, 只能使用`sdpa`')
