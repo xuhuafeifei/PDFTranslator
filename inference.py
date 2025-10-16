@@ -410,6 +410,7 @@ if __name__ == "__main__":
                 prediction, h, w= inference(temp_path, prompt)
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
+                prediction = qwenvl_pred_cast_tag(prediction)
                 prediction_list.append(prediction)
                 # 保存预测结果
                 with open(output_path + f"_page_{i+1}.txt", "w", encoding="utf-8") as f:
@@ -425,7 +426,7 @@ if __name__ == "__main__":
             try:
                 translator.load_model()
                 print(f"翻译预测结果...")
-                prediction_list = [translate_prediction(qwenvl_pred_cast_tag(prediction)) for prediction in prediction_list]
+                prediction_list = [translate_prediction(prediction) for prediction in prediction_list]
             except Exception as e:
                 print(f"翻译预测结果失败: {e}")
             finally:
