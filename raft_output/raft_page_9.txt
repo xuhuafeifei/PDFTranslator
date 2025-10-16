@@ -1,0 +1,41 @@
+ 
+
+\begin{center}
+\includegraphics[width=232pt, height=122pt]{page_9_1.png}
+\end{center}
+\begin{center} Figure 9: If S1 (leader for term T) commits a new log entry from its term, and S5 is elected leader for a later term U, then there must be at least one server (S3) that accepted the log entry and also voted for S5.
+
+ \end{center} ure 8 illustrates a situation where an old log entry is stored on a majority of servers, yet can still be overwritten by a future leader.
+
+To eliminate problems like the one in Figure 8, Raft never commits log entries from previous terms by counting replicas. Only log entries from the leader's current term are committed by counting replicas; once an entry from the current term has been committed in this way, then all prior entries are committed indirectly because of the Log Matching Property. There are some situations where a leader could safely conclude that an older log entry is committed (for example, if that entry is stored on every server), but Raft takes a more conservative approach for simplicity.
+
+Raft incurs this extra complexity in the commitment rules because log entries retain their original term numbers when a leader replicates entries from previous terms. In other consensus algorithms, if a new leader replicates entries from prior "terms," it must do so with its new "term number." Raft's approach makes it easier to reason about log entries, since they maintain the same term number over time and across logs. In addition, new leaders in Raft send fewer log entries from previous terms than in other algorithms (other algorithms must send redundant log entries to renumber them before they can be committed).
+
+\subsection*{5.4.3 Safety argument}
+
+Given the complete Raft algorithm, we can now argue more precisely that the Leader Completeness Property holds (this argument is based on the safety proof; see Section 9.2). We assume that the Leader Completeness Property does not hold, then we prove a contradiction. Suppose the leader for term T (leader ${ }_{\mathrm{T}}$ ) commits a log entry from its term, but that log entry is not stored by the leader of some future term. Consider the smallest term $U$ $>\mathrm{T}$ whose leader (leader ${ }_{\mathrm{U}}$ ) does not store the entry.
+
+1. The committed entry must have been absent from leader ${ }_{\mathrm{U}}$'s log at the time of its election (leaders never delete or overwrite entries).
+
+2. leader ${ }_{\mathrm{T}}$ replicated the entry on a majority of the cluster, and leader ${ }_{\mathrm{U}}$ received votes from a majority of the cluster. Thus, at least one server ("the voter") both accepted the entry from leader ${ }_{\mathrm{T}}$ and voted for
+
+leader ${ }_{\mathrm{U}}$, as shown in Figure 9. The voter is key to reaching a contradiction.
+
+3. The voter must have accepted the committed entry from leader ${ }_{\mathrm{T}}$ before voting for leader ${ }_{\mathrm{U}}$; otherwise it would have rejected the AppendEntries request from leader ${ }_{\mathrm{T}}$ (its current term would have been higher than T).
+
+4. The voter still stored the entry when it voted for leader ${ }_{\mathrm{U}}$, since every intervening leader contained the entry (by assumption), leaders never remove entries, and followers only remove entries if they conflict with the leader.
+
+5. The voter granted its vote to leader ${ }_{\mathrm{U}}$, so leader ${ }_{\mathrm{U}}$'s $\log$ must have been as up-to-date as the voter's. This leads to one of two contradictions.
+
+6. First, if the voter and leader ${ }_{\mathrm{T}}$ shared the same last log term, then leader ${ }_{\mathrm{U}}$'s log must have been at least as long as the voter's, so its log contained every entry in the voter's log. This is a contradiction, since the voter contained the committed entry and leader ${ }_{\mathrm{U}}$ was assumed not to.
+
+7. Otherwise, leader ${ }_{\mathrm{U}}$'s last log term must have been larger than the voter's. Moreover, it was larger than T, since the voter's last log term was at least T (it contains the committed entry from term T ). The earlier leader that created leader ${ }_{\mathrm{U}}$'s last log entry must have contained the committed entry in its log (by assumption). Then, by the Log Matching Property, leader ${ }_{\mathrm{U}}$'s $\log$ must also contain the committed entry, which is a contradiction.
+
+8. This completes the contradiction. Thus, the leaders of all terms greater than T must contain all entries from term T that are committed in term T.
+
+9. The Log Matching Property guarantees that future leaders will also contain entries that are committed indirectly, such as index 2 in Figure 8(d).
+
+Given the Leader Completeness Property, we can prove the State Machine Safety Property from Figure 3, which states that if a server has applied a log entry at a given index to its state machine, no other server will ever apply a different log entry for the same index. At the time a server applies a log entry to its state machine, its log must be identical to the leader's log up through that entry and the entry must be committed. Now consider the lowest term in which any server applies a given log index; the Log Completeness Property guarantees that the leaders for all higher terms will store that same log entry, so servers that apply the index in later terms will apply the same value. Thus, the State Machine Safety Property holds.
+
+Finally, Raft requires servers to apply entries in log index order. Combined with the State Machine Safety Property, this means that all servers will apply exactly the same set of log entries to their state machines, in the same order.
+

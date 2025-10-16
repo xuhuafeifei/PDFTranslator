@@ -193,7 +193,7 @@ def replace_img_with_includegraphics_and_save_img(img, scale, html_content, page
         # 获取图片名称
         fig_name = get_fig_name_by_div(html_content, old_tag)
         # 构建新的标签（包含尺寸和居中）
-        new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}'
+        new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}\n'
 
         # 替换第一个匹配（避免重复替换）
         result = result.replace(fig_name, "", 1).replace(old_tag, new_tag, 1)
