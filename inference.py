@@ -411,12 +411,15 @@ if __name__ == "__main__":
                 prediction = catch_picture_and_replace_prediction(temp_path, prediction, output_path, h, w, i+1)
                 print(f"处理第{i+1}页完成...")
                 prediction_list.append(prediction)
+                # 保存预测结果
+                with open(output_path + f"_page_{i+1}.txt", "w", encoding="utf-8") as f:
+                    f.write(prediction)
 
-                # 卸载模型
-                del model
-                del processor
-                torch.cuda.empty_cache()
-                print("模型已卸载，显存已释放...")
+            # 卸载模型
+            del model
+            del processor
+            torch.cuda.empty_cache()
+            print("模型已卸载，显存已释放...")
 
             # 翻译预测结果
             try:
