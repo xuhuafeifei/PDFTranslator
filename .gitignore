@@ -63,6 +63,7 @@ db.sqlite3-journal
 paxos/
 
 translate/
+!translate_result/
 
 # Flask stuff:
 instance/
@@ -157,6 +158,7 @@ Thumbs.db
 output_images/
 temp_images/
 *.pdf
+!translate_result/**/*.pdf
 *.png
 *.jpg
 *.jpeg
