@@ -63,6 +63,8 @@ python inference.py \
 
 ## 效果
 
+> 更多翻译结果可见/translate_result目录下的所有文件
+
 论文原文
 <img src="./README-img/1.jpg">
 
