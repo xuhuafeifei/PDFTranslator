@@ -107,7 +107,7 @@ class DocumentProcessor:
             )
 
             # 6. 清理HTML标签
-            cleaned_contents = self._clean_html_tags(processed_contents)
+            cleaned_contents = [self.vl_adapter._clean_html_tags(process_content) for process_content in processed_contents]
             
             # 7. 翻译
             translated_contents = self._translate_contents(cleaned_contents)
