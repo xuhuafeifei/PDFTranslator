@@ -6,3 +6,4 @@ accelerate==1.0.0
 opencv-python
 PyMuPDF>=1.23.0
 Pillow>=9.0.0
+modelscope
