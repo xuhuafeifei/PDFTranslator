@@ -3,6 +3,7 @@
 """
 import argparse
 import os
+import re
 from typing import List, Tuple
 
 import cv2
@@ -95,9 +96,10 @@ class DocumentProcessor:
         # 获取文件名（不含扩展名）
         filename = filename.rsplit('.', 1)[0]
         """输出调试内容"""
-        for i, html_content, image_path, input_height, input_width in enumerate(zip(html_contents, image_paths, input_heights, input_widths)):
-            file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_html.txt")
+        for i, data in enumerate(zip(html_contents, image_paths, input_heights, input_widths)):
+            html_content, image_path, input_height, input_width = data
             # html
+            file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_html.txt")
             with open(file_path, "w") as f:
                 f.write(html_content)
             # 清理HTML标签
@@ -132,7 +134,6 @@ class DocumentProcessor:
 
                 cv2.imwrite(file_path, img)
             plot_bbox(image_path, html_content, input_height, input_width, file_path)
-            pass
             
     def process_pdf(self, pdf_path: str, output_path: str, prompt: str = "QwenVL HTML", debug_content: bool = False) -> str:
         """
