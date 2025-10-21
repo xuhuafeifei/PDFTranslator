@@ -222,6 +222,13 @@ class ImageProcessor:
             scaled_y2 = int(y2 * scale_y)
             
             print(f"  原始尺寸: {width} x {height}")
+
+            MAX_WIDTH = 500
+            # 尺寸缩放, 如果宽度大于580, 等比例缩小
+            if width > MAX_WIDTH:
+                alpha = MAX_WIDTH / width
+                width = MAX_WIDTH
+                height = int(height * alpha)
             
             # 生成图片路径
             image_name = image_name_template.format(page_num=page_num, number=num)
