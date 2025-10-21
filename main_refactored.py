@@ -131,7 +131,7 @@ class DocumentProcessor:
                     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 8)
 
                 cv2.imwrite(file_path, img)
-            plot_bbox(image_path, html_content, input_height, input_width, file_path)
+            plot_bbox(image_path, html_content, input_height, input_width)
             
     def process_pdf(self, pdf_path: str, output_path: str, prompt: str = "QwenVL HTML", debug_content: bool = False) -> str:
         """
