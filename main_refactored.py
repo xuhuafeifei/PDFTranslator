@@ -5,6 +5,8 @@ import argparse
 import os
 from typing import List, Tuple
 
+import cv2
+
 from vladapter import VLAdapter, PictToPictConverter, PdfToPictConverter
 from translator import TextTranslator
 from persistence import PersistenceLayer, LatexPersistenceStrategy, PdfPersistenceStrategy, ImageProcessor
@@ -14,7 +16,7 @@ class DocumentProcessor:
     """文档处理器 - 整合所有组件"""
     
     def __init__(self, vl_model_path: str, translator_model_path: str = None, 
-                 device: str = "cuda", attn: str = "sdpa"):
+                 device: str = "cuda", attn: str = "sdpa", debug_content: bool = False):
         """
         初始化文档处理器
         
@@ -32,6 +34,8 @@ class DocumentProcessor:
         
         # 初始化Persistence（持久化层）
         self.persistence = PersistenceLayer(LatexPersistenceStrategy())
+
+        self.debug_content = debug_content
     
     def process_image(self, image_path: str, output_path: str, prompt: str = "QwenVL HTML") -> str:
         """
@@ -69,11 +73,68 @@ class DocumentProcessor:
         
         # 7. 持久化
         self.persistence.save(translated_contents, output_path)
+
+        # 8. 输出调试内容
+        self._output_debug_content(html_contents, output_path, [image_path], input_heights, input_widths, 1)
         
         print(f"图片处理完成: {output_path}")
         return output_path
-    
-    def process_pdf(self, pdf_path: str, output_path: str, prompt: str = "QwenVL HTML") -> str:
+
+    def _output_debug_content(self, html_contents: List[str], output_path: str, image_paths: List[str], input_heights: List[int], input_widths: List[int], start_page: int = 1):
+        # 如果不需要调试内容, 直接返回
+        if not self.debug_content:
+            return
+        # 获取输出dir
+        output_dir = os.path.dirname(output_path)
+        # 创建debug目录
+        debug_dir = os.path.join(output_dir, "debug")
+        os.makedirs(debug_dir, exist_ok=True)
+
+        # 获取文件名
+        filename = os.path.basename(output_path)
+        # 获取文件名（不含扩展名）
+        filename = filename.rsplit('.', 1)[0]
+        """输出调试内容"""
+        for i, html_content, image_path, input_height, input_width in enumerate(zip(html_contents, image_paths, input_heights, input_widths)):
+            file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_html.txt")
+            # html
+            with open(file_path, "w") as f:
+                f.write(html_content)
+            # 清理HTML标签
+            file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_clear_div.txt")
+            with open(file_path, "w") as f:
+                f.write(self.vl_adapter._clean_html_tags(html_content))
+            # 识别区间 
+            file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_bbox.png")
+            def plot_bbox(img_path, pred, input_height, input_width, output_path):
+                img = cv2.imread(img_path)
+                img_height, img_width, _ = img.shape
+                scale = (img_width / input_width, img_height / input_height)
+                bboxes = []
+
+                pattern = re.compile(r'img data-bbox="(\d+),(\d+),(\d+),(\d+)"')
+
+                scale_x, scale_y = scale  
+
+                def replace_bbox(match):
+                    x1, y1, x2, y2 = map(int, match)
+                    bboxes.append([int(x1 * scale_x), int(y1 * scale_y), int(x2 * scale_x), int(y2 * scale_y)])
+
+                
+                matches = re.findall(pattern, pred)
+                if matches:
+                    for match in matches:
+                        # print(match)
+                        replace_bbox(match)
+                for bbox in bboxes:
+                    x1, y1, x2, y2 = bbox
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 8)
+
+                cv2.imwrite(file_path, img)
+            plot_bbox(image_path, html_content, input_height, input_width, file_path)
+            pass
+            
+    def process_pdf(self, pdf_path: str, output_path: str, prompt: str = "QwenVL HTML", debug_content: bool = False) -> str:
         """
         处理PDF文件
         
@@ -111,10 +172,13 @@ class DocumentProcessor:
             
             # 7. 翻译
             translated_contents = self._translate_contents(cleaned_contents)
-            
+
             # 8. 持久化
             self.persistence.save(translated_contents, output_path)
-            
+
+            # 9. 输出调试内容
+            self._output_debug_content(html_contents, output_path, image_paths, input_heights, input_widths)
+
             print(f"PDF处理完成: {output_path}")
             return output_path
             
@@ -190,6 +254,8 @@ def main():
     parser.add_argument("--persistence_strategy", type=str, default="latex",
                         choices=["latex", "pdf"],
                         help="持久化策略")
+    parser.add_argument("--debug_content", type=bool, default=False,
+                        help="是否输出调试内容")
     
     args = parser.parse_args()
     
@@ -198,7 +264,8 @@ def main():
         vl_model_path=args.vl_model_path,
         translator_model_path=args.translator_model_path,
         device=args.device,
-        attn=args.attn
+        attn=args.attn,
+        debug_content=args.debug_content
     )
     
     # 设置持久化策略

@@ -169,8 +169,8 @@ class ImageProcessor:
                     ).strip()
         except Exception as e:
             print(f"获取图片名称失败: {e}")
-            return "get_fig_name_error"
-        return "can_not_find_fig_name"
+            return ""  # 返回空字符串而不是错误信息
+        return ""  # 返回空字符串而不是错误信息
     
     @staticmethod
     def replace_img_with_includegraphics_and_save_img(img, scale: Tuple[float, float], 
@@ -239,10 +239,15 @@ class ImageProcessor:
             # 获取图片名称
             fig_name = ImageProcessor.get_fig_name_by_div(html_content, old_tag)
             # 构建新的标签（包含尺寸和居中）
-            new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}\n'
+            if fig_name.strip():  # 如果图片名称不为空
+                new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n\\begin{{center}}\n{fig_name}\n\\end{{center}}\n'
+            else:  # 如果图片名称为空，只显示图片
+                new_tag = f'\\begin{{center}}\n\\includegraphics[width={width}pt, height={height}pt]{{{image_name}}}\n\\end{{center}}\n'
             
             # 替换第一个匹配（避免重复替换）
-            result = result.replace(fig_name, "", 1).replace(old_tag, new_tag, 1)
+            if fig_name.strip():  # 只有当图片名称不为空时才替换
+                result = result.replace(fig_name, "", 1)
+            result = result.replace(old_tag, new_tag, 1)
             print(f"  替换: {old_tag} -> {new_tag}")
             
             print(f"截取并保存图片...")
