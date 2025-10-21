@@ -93,8 +93,6 @@ class DocumentProcessor:
 
         # 获取文件名
         filename = os.path.basename(output_path)
-        # 获取文件名（不含扩展名）
-        filename = filename.rsplit('.', 1)[0]
         """输出调试内容"""
         for i, data in enumerate(zip(html_contents, image_paths, input_heights, input_widths)):
             html_content, image_path, input_height, input_width = data
@@ -108,13 +106,13 @@ class DocumentProcessor:
                 f.write(self.vl_adapter._clean_html_tags(html_content))
             # 识别区间 
             file_path = os.path.join(debug_dir, f"{filename}_{start_page + i}_bbox.png")
-            def plot_bbox(img_path, pred, input_height, input_width, output_path):
+            def plot_bbox(img_path, pred, input_height, input_width):
                 img = cv2.imread(img_path)
                 img_height, img_width, _ = img.shape
                 scale = (img_width / input_width, img_height / input_height)
                 bboxes = []
 
-                pattern = re.compile(r'img data-bbox="(\d+),(\d+),(\d+),(\d+)"')
+                pattern = re.compile(r'data-bbox="(\d+),(\d+),(\d+),(\d+)"')
 
                 scale_x, scale_y = scale  
 
@@ -126,7 +124,7 @@ class DocumentProcessor:
                 matches = re.findall(pattern, pred)
                 if matches:
                     for match in matches:
-                        # print(match)
+                        print(f"识别到区间: {match}")
                         replace_bbox(match)
                 for bbox in bboxes:
                     x1, y1, x2, y2 = bbox
