@@ -294,7 +294,57 @@ class ImageProcessor:
             processed_contents.append(processed_content)
         
         return processed_contents
+    
 
+    @staticmethod
+    def process_table_and_replace_predictions(image_paths: List[str], html_contents: List[str], 
+                                             output_path: str, input_heights: List[int], 
+                                             input_widths: List[int]) -> List[str]:
+        """
+        处理图片并替换预测结果中的table标签
+        
+        Args:
+            image_paths: 图片路径列表
+            html_contents: HTML内容列表
+            output_path: 输出路径
+            input_heights: 输入高度列表
+            input_widths: 输入宽度列表
+            
+        Returns:
+            处理后的HTML内容列表
+        """
+        processed_contents = []
+        output_dir = os.path.dirname(output_path)
+
+        
+        for i, (image_path, html_content, input_height, input_width) in enumerate(
+            zip(image_paths, html_contents, input_heights, input_widths)):
+            
+            img = cv2.imread(image_path)
+            img_height, img_width, _ = img.shape
+            scale = (img_width / input_width, img_height / input_height)
+
+            # 处理html, 将table标签转化为img标签
+            lines = html_content.split("\n")
+            new_lines = []
+            for line in lines:
+                if "<table" in lines:
+                    pattern = re.compile(r'data-bbox="(\d+),(\d+),(\d+),(\d+)">')
+                    # 找到所有匹配
+                    matches = pattern.findall(line)
+                    for match in matches:
+                        x1, y1, x2, y2 = match
+                        # 将table标签替换为img标签
+                        new_lines.append(f"<img data-bbox='{x1},{y1},{x2},{y2}'/>")
+                new_lines.append(line)
+            html_content = "\n".join(new_lines)
+            
+            processed_content = ImageProcessor.replace_img_with_includegraphics_and_save_img(
+                img, scale, html_content, i + 1, output_dir
+            )
+            processed_contents.append(processed_content)
+        
+        return processed_contents
 
 class PersistenceLayer:
     """持久化层"""

@@ -71,6 +71,11 @@ class DocumentProcessor:
             [image_path], html_contents, output_path, input_heights, input_widths
         )
 
+        # 4. 处理图片并替换table标签
+        processed_contents = self._process_table_and_replace_tags(
+            [image_path], html_contents, output_path, input_heights, input_widths
+        )
+
         # 5. 清理HTML标签
         cleaned_contents = [self.vl_adapter._clean_html_tags(process_content) for process_content in processed_contents]
 
@@ -174,6 +179,11 @@ class DocumentProcessor:
                 image_paths, html_contents, output_path, input_heights, input_widths
             )
 
+            # 5. 处理图片并替换table标签
+            processed_contents = self._process_table_and_replace_tags(
+                image_paths, html_contents, output_path, input_heights, input_widths
+            )
+
             # 6. 清理HTML标签
             cleaned_contents = [self.vl_adapter._clean_html_tags(process_content) for process_content in processed_contents]
 
@@ -200,6 +210,13 @@ class DocumentProcessor:
                                        output_path: str, input_heights: List[int], input_widths: List[int]) -> List[str]:
         """处理图片并替换img标签"""
         return ImageProcessor.process_images_and_replace_predictions(
+            image_paths, html_contents, output_path, input_heights, input_widths
+        )
+    
+    def _process_table_and_replace_tags(self, image_paths: List[str], html_contents: List[str], 
+                                       output_path: str, input_heights: List[int], input_widths: List[int]) -> List[str]:
+        """处理图片并替换table标签"""
+        return ImageProcessor.process_table_and_replace_predictions(
             image_paths, html_contents, output_path, input_heights, input_widths
         )
     

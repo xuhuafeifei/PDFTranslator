@@ -73,3 +73,12 @@ python inference.py \
 
 pdf预览
 <img src="./README-img/3.jpg">
+
+
+# 设置HTTP代理
+export http_proxy="http://127.0.0.1:7890"
+export HTTP_PROXY="http://127.0.0.1:7890"
+
+# 设置HTTPS代理
+export https_proxy="http://127.0.0.1:7890"
+export HTTPS_PROXY="http://127.0.0.1:7890"
