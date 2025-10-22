@@ -11,6 +11,7 @@ import cv2
 from vladapter import VLAdapter, PictToPictConverter, PdfToPictConverter
 from translator import TextTranslator
 from persistence import PersistenceLayer, LatexPersistenceStrategy, PdfPersistenceStrategy, ImageProcessor
+from latex_optimizer import LatexOptimizer
 
 
 class DocumentProcessor:
@@ -36,6 +37,10 @@ class DocumentProcessor:
         # 初始化Persistence（持久化层）
         self.persistence = PersistenceLayer(LatexPersistenceStrategy())
 
+        # 初始化LaTeX优化器
+        self.latex_optimizer = LatexOptimizer()
+
+        # 是否输出调试内容
         self.debug_content = debug_content
     
     def process_image(self, image_path: str, output_path: str, prompt: str = "QwenVL HTML") -> str:
@@ -68,6 +73,9 @@ class DocumentProcessor:
 
         # 5. 清理HTML标签
         cleaned_contents = [self.vl_adapter._clean_html_tags(process_content) for process_content in processed_contents]
+
+        # 6. 优化LaTeX
+        optimized_contents = [self.latex_optimizer.optimize(content) for content in cleaned_contents]
         
         # 6. 翻译
         translated_contents = self._translate_contents(cleaned_contents)
@@ -168,9 +176,12 @@ class DocumentProcessor:
 
             # 6. 清理HTML标签
             cleaned_contents = [self.vl_adapter._clean_html_tags(process_content) for process_content in processed_contents]
+
+            # 7. 优化LaTeX
+            optimized_contents = [self.latex_optimizer.optimize(content) for content in cleaned_contents]
             
             # 7. 翻译
-            translated_contents = self._translate_contents(cleaned_contents)
+            translated_contents = self._translate_contents(optimized_contents)
 
             # 8. 持久化
             self.persistence.save(translated_contents, output_path)
