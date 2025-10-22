@@ -109,6 +109,9 @@ class LatexOptimizer:
                     optimized_line.append(c)
                 # 非数学模式的文本, 需要将特殊字符映射转换
                 elif not in_math_mode and c in self.special_map:
+                    # 如果结尾是\, 直接移除. 选择sepcial_map中的转义方式
+                    if optimized_line and optimized_line[-1] == '\\':
+                        optimized_line.pop()
                     optimized_line.append(self.special_map[c])
                 else:
                     optimized_line.append(c)
