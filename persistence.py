@@ -335,7 +335,7 @@ class ImageProcessor:
                     for match in matches:
                         x1, y1, x2, y2 = match
                         # 将table标签替换为img标签
-                        new_lines.append(f"<img data-bbox='{x1},{y1},{x2},{y2}'/>")
+                        new_lines.append(f"<img data-bbox=\"{x1},{y1},{x2},{y2}\"/>")
                 else:
                     new_lines.append(line)
             html_content = "\n".join(new_lines)
