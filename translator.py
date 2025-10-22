@@ -136,11 +136,11 @@ class TextTranslator:
     
     def translate_optimized(self, text, source_lang="英文", target_lang="中文", preserve_format=True, max_tokens=2048):
         # 切割text
-        lines = text.split("\n")
+        lines = text.strip().split("\n")
         result = []
         for line in lines:
             if line.strip() == "":
-                continue
+                result.append("\n")
             else:
                 translated = self.translate(line, source_lang, target_lang, preserve_format, max_tokens, output_log=False)
                 result.append(translated)
