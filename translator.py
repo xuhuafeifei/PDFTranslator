@@ -140,7 +140,7 @@ class TextTranslator:
         result = []
         for line in lines:
             if line.strip() == "":
-                result.append("\n")
+                continue
             else:
                 translated = self.translate(line, source_lang, target_lang, preserve_format, max_tokens, output_log=False)
                 result.append(translated)
