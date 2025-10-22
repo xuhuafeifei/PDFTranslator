@@ -57,7 +57,7 @@ class TextTranslator:
             self.logger.error(f"模型加载失败: {e}")
             raise
     
-    def translate(self, text, source_lang="英文", target_lang="中文", preserve_format=True, max_tokens=2048):
+    def translate(self, text, source_lang="英文", target_lang="中文", preserve_format=True, max_tokens=2048, output_log: bool = True):
         """
         翻译文本
         
@@ -125,7 +125,8 @@ class TextTranslator:
                 return '\n'.join(lines[1:-1])
 
             # translated =  remove_first_last_lines(translated)
-            self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}\n翻译内容: {translated}")
+            if output_log:
+                self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}\n翻译内容: {translated}")
 
             return translated
             
@@ -141,9 +142,11 @@ class TextTranslator:
             if line.strip() == "":
                 result.append("\n")
             else:
-                translated = self.translate(line, source_lang, target_lang, preserve_format, max_tokens)
+                translated = self.translate(line, source_lang, target_lang, preserve_format, max_tokens, output_log=False)
                 result.append(translated)
-        return "\n".join(result)
+        translated = "\n".join(result)
+        self.logger.info(f"翻译完成，原文长度: {len(text)}, 译文长度: {len(translated)}, 使用max_tokens: {max_tokens}\n翻译内容: {translated}")
+        return translated
 
     def translate_batch(self, texts, source_lang="英文", target_lang="中文", preserve_format=True):
         """

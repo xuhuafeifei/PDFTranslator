@@ -78,7 +78,7 @@ class DocumentProcessor:
         optimized_contents = [self.latex_optimizer.optimize(content) for content in cleaned_contents]
         
         # 6. 翻译
-        translated_contents = self._translate_contents(cleaned_contents)
+        translated_contents = self._translate_contents(optimized_contents)
         
         # 7. 持久化
         self.persistence.save(translated_contents, output_path)
@@ -212,7 +212,7 @@ class DocumentProcessor:
             
             for i, content in enumerate(contents):
                 print(f"翻译第{i+1}页...")
-                translated = self.translator.translate(content)
+                translated = self.translator.translate_optimized(content)
                 translated_contents.append(translated)
             
             return translated_contents
