@@ -194,7 +194,8 @@ class VLAdapter:
         
         return html_contents, input_heights, input_widths
 
-    def _clean_html_tags(self, html_content: str) -> str:
+    @staticmethod
+    def _clean_html_tags(html_content: str) -> str:
         """清理HTML标签"""
         output = html_content
         
@@ -228,37 +229,8 @@ class VLAdapter:
         
         output = output.replace(" </td>", "</td>")
         
-        # 处理LaTeX特殊字符
-        output = self._escape_latex_special_chars(output)
-        
         return output
     
-    def _escape_latex_special_chars(self, text: str) -> str:
-        """转义LaTeX特殊字符"""
-        # 转义常见的LaTeX特殊字符
-        special_chars = {
-            '&': '\\&',
-            '%': '\\%',
-            '$': '\\$',
-            '#': '\\#',
-            '^': '\\textasciicircum{}',
-            '_': '\\_',
-            '{': '\\{',
-            '}': '\\}',
-            '~': '\\textasciitilde{}',
-            '\\': '\\textbackslash{}',
-        }
-        
-        # 处理 | 符号，在LaTeX中需要特殊处理
-        # 如果 | 不在数学模式中，用 \textbar 替换
-        text = re.sub(r'(?<!\$)\|(?!\$)', r'\\textbar{}', text)
-        
-        # 转义其他特殊字符
-        for char, replacement in special_chars.items():
-            text = text.replace(char, replacement)
-        
-        return text
-   
     def cleanup(self):
         """清理资源"""
         self.vision_model.unload_model()

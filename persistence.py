@@ -9,6 +9,8 @@ import math
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
+from vladapter import VLAdapter
+
 
 class PersistenceStrategy(ABC):
     """持久化策略基类"""
@@ -336,6 +338,9 @@ class ImageProcessor:
                         x1, y1, x2, y2 = match
                         # 将table标签替换为img标签
                         new_lines.append(f"<img data-bbox=\"{x1},{y1},{x2},{y2}\"/>")
+                elif "class=\"table caption\"" in line:
+                    table_caption = VLAdapter._clean_html_tags(line)
+                    new_lines.append(f"<p>{table_caption}</p>")
                 else:
                     new_lines.append(line)
             html_content = "\n".join(new_lines)
