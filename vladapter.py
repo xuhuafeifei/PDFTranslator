@@ -224,7 +224,7 @@ class VLAdapter:
                 return pattern.sub(r' \n\n\1\n\n ', txt)
             return pattern.sub(r' \1 ', txt)
         
-        for cls in ['image', 'chemistry', 'table', 'formula', 'image caption']:
+        for cls in ['image', 'chemistry', 'table', 'formula', 'image caption', 'table caption']:
             output = strip_div(cls, output)
         
         output = output.replace(" </td>", "</td>")
