@@ -219,7 +219,7 @@ class VLAdapter:
                 rf'\s*<div\b[^>]*class="{class_name}"[^>]*>(.*?)<\/div>\s*',
                 flags=re.DOTALL | re.IGNORECASE,
             )
-            if class_name == 'image':
+            if class_name == 'image' or class_name == 'table' or class_name == 'image caption':
                 return pattern.sub(r' \n\n\1\n\n ', txt)
             return pattern.sub(r' \1 ', txt)
         
