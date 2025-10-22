@@ -328,7 +328,7 @@ class ImageProcessor:
             lines = html_content.split("\n")
             new_lines = []
             for line in lines:
-                if "<table" in lines:
+                if "class=\"table\"" in line:
                     pattern = re.compile(r'data-bbox="(\d+),(\d+),(\d+),(\d+)">')
                     # 找到所有匹配
                     matches = pattern.findall(line)
@@ -336,7 +336,8 @@ class ImageProcessor:
                         x1, y1, x2, y2 = match
                         # 将table标签替换为img标签
                         new_lines.append(f"<img data-bbox='{x1},{y1},{x2},{y2}'/>")
-                new_lines.append(line)
+                else:
+                    new_lines.append(line)
             html_content = "\n".join(new_lines)
             
             processed_content = ImageProcessor.replace_img_with_includegraphics_and_save_img(
