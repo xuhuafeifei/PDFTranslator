@@ -264,6 +264,8 @@ In this work, we collect thousands of cold-start data to fine-tune the DeepSeek-
     
     """
 
+    test_content = r"""C\#"""
+
     optimized = optimizer.optimize(test_content)
     print("优化前:")
     print(test_content)
