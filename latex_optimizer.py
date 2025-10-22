@@ -29,16 +29,16 @@ class LatexOptimizer:
         }
         # 特殊字符映射
         self.special_map = {
-            '\\': r'\textbackslash{}',
-            '{': r'\{',
-            '}': r'\}',
-            '$': r'\$',
-            '%': r'\%',
+            # '\\': r'\textbackslash{}',
+            # '{': r'\{',
+            # '}': r'\}',
+            # '$': r'\$',
+            # '%': r'\%',
             '#': r'\#',
             '_': r'\_',
-            '^': r'\^{}',
-            '&': r'\&',
-            '~': r'\textasciitilde{}',
+            # '^': r'\^{}',
+            # '&': r'\&',
+            # '~': r'\textasciitilde{}',
             '<': r'\textless{}',
             '>': r'\textgreater{}',
         }
@@ -92,22 +92,26 @@ class LatexOptimizer:
                         in_math_mode = not in_math_mode
                     if optimized_line and optimized_line[-1] == '\\':
                         optimized_line.pop()
+                    optimized_line.append(c)
                 elif c == r'{':
                     if optimized_line and optimized_line[-1] == '\\':
                         optimized_line.pop()
                         # 判断结尾是否是'left', 如果是, 需要保留\
                         if list_end_with(optimized_line, 'left'):
                             optimized_line.append('\\')
+                    optimized_line.append(c)
                 elif c == r'}':
                     if optimized_line and optimized_line[-1] == '\\':
                         optimized_line.pop()
                         # 判断结尾是否是right, 如果是, 需要保留\
                         if list_end_with(optimized_line, 'right'):
                             optimized_line.append('\\')
+                    optimized_line.append(c)
                 # 非数学模式的文本, 需要将特殊字符映射转换
                 elif not in_math_mode and c in self.special_map:
                     optimized_line.append(self.special_map[c])
-                optimized_line.append(c)
+                else:
+                    optimized_line.append(c)
             optimized_lines.append("".join(optimized_line))
         
         return "\n".join(optimized_lines)  # 重新组合为字符串
@@ -167,7 +171,95 @@ In this work, we collect thousands of cold-start data to fine-tune the DeepSeek-
 
 # """
 
-    test_content = r"""$\left\{o_{1}, o_{2}, \cdots, o_{G}\right\}$"""
+    test_content = r"""
+    Question: If $a>1$, then the sum of the real solutions of $\sqrt{a-\sqrt{a+x}}=x$ is equal to
+
+Response: <think>
+
+To solve the equation $\sqrt{a-\sqrt{a+x}}=x$, let's start by squaring both $\cdots$
+
+$(\sqrt{a-\sqrt{a+x}})^{2}=x^{2} \Longrightarrow a-\sqrt{a+x}=x^{2}$.
+
+Rearrange to isolate the inner square root term:
+
+$\left(a-x^{2}\right)^{2}=a+x \Longrightarrow a^{2}-2 a x^{2}+\left(x^{2}\right)^{2}=a+x \Longrightarrow x^{4}-2 a x^{2}-x+\left(a^{2}-a\right)=0$
+
+Wait, wait. Wait. That's an aha moment I can flag her
+
+Let's reevaluate this step-by-step to identify if the correct sum can be $\cdots$
+
+We started with the equation:
+
+$\sqrt{a-\sqrt{a+x}}=x$
+
+First, let's square both sides:
+
+$a-\sqrt{a+x}=x^{2} \Longrightarrow \sqrt{a+x}=a-x^{2}$
+
+Next, I could square both sides again, treating the equation: $\cdots$
+
+Table 3 | An interesting "aha moment" of an intermediate version of DeepSeek-R1-Zero. The model learns to rethink using an anthropomorphic tone. This is also an aha moment for us, allowing us to witness the power and beauty of reinforcement learning.
+
+Drawback of DeepSeek-R1-Zero Although DeepSeek-R1-Zero exhibits strong reasoning capabilities and autonomously develops unexpected and powerful reasoning behaviors, it faces several issues. For instance, DeepSeek-R1-Zero struggles with challenges like poor readability, and language mixing. To make reasoning processes more readable and share them with the open community, we explore DeepSeek-R1, a method that utilizes RL with human-friendly cold-start data.
+
+\subsection*{2.3. DeepSeek-R1: Reinforcement Learning with Cold Start}
+
+Inspired by the promising results of DeepSeek-R1-Zero, two natural questions arise: 1) Can reasoning performance be further improved or convergence accelerated by incorporating a small amount of high-quality data as a cold start? 2) How can we train a user-friendly model that not only produces clear and coherent Chains of Thought (CoT) but also demonstrates strong general capabilities? To address these questions, we design a pipeline to train DeepSeek-R1. The pipeline consists of four stages, outlined as follows.
+
+\subsection*{2.3.1. Cold Start}
+
+Unlike DeepSeek-R1-Zero, to prevent the early unstable cold start phase of RL training from the base model, for DeepSeek-R1 we construct and collect a small amount of long CoT data to fine-tune the model as the initial RL actor. To collect such data, we have explored several approaches: using few-shot prompting with a long CoT as an example, directly prompting models to generate detailed answers with reflection and verification, gathering DeepSeek-R1Zero outputs in a readable format, and refining the results through post-processing by human annotators.
+
+In this work, we collect thousands of cold-start data to fine-tune the DeepSeek-V3-Base as the starting point for RL. Compared to DeepSeek-R1-Zero, the advantages of cold start data
+
+"""
+
+    # test_content = r"""$\left\{o_{1}, o_{2}, \cdots, o_{G}\right\}$"""
+
+    test_content = r"""\subsection*{2.3.1. Cold Start}"""
+
+    test_content = r"""
+Question: If $a>1$, then the sum of the real solutions of $\sqrt{a-\sqrt{a+x}}=x$ is equal to
+
+Response: <think>
+
+To solve the equation $\sqrt{a-\sqrt{a+x}}=x$, let's start by squaring both $\cdots$
+
+$(\sqrt{a-\sqrt{a+x}})^{2}=x^{2} \Longrightarrow a-\sqrt{a+x}=x^{2}$.
+
+Rearrange to isolate the inner square root term:
+
+$\left(a-x^{2}\right)^{2}=a+x \Longrightarrow a^{2}-2 a x^{2}+\left(x^{2}\right)^{2}=a+x \Longrightarrow x^{4}-2 a x^{2}-x+\left(a^{2}-a\right)=0$
+
+Wait, wait. Wait. That's an aha moment I can flag here.
+
+Let's reevaluate this step-by-step to identify if the correct sum can be $\cdots$
+
+We started with the equation:
+
+$\sqrt{a-\sqrt{a+x}}=x$
+
+First, let's square both sides:
+
+$a-\sqrt{a+x}=x^{2} \Longrightarrow \sqrt{a+x}=a-x^{2}$
+
+Next, I could square both sides again, treating the equation: $\cdots$
+
+Table 3 | An interesting "aha moment" of an intermediate version of DeepSeek-R1-Zero. The model learns to rethink using an anthropomorphic tone. This is also an aha moment for us, allowing us to witness the power and beauty of reinforcement learning.
+
+Drawback of DeepSeek-R1-Zero Although DeepSeek-R1-Zero exhibits strong reasoning capabilities and autonomously develops unexpected and powerful reasoning behaviors, it faces several issues. For instance, DeepSeek-R1-Zero struggles with challenges like poor readability, and language mixing. To make reasoning processes more readable and share them with the open community, we explore DeepSeek-R1, a method that utilizes RL with human-friendly cold-start data.
+
+\subsection*{2.3. DeepSeek-R1: Reinforcement Learning with Cold Start}
+
+Inspired by the promising results of DeepSeek-R1-Zero, two natural questions arise: 1) Can reasoning performance be further improved or convergence accelerated by incorporating a small amount of high-quality data as a cold start? 2) How can we train a user-friendly model that not only produces clear and coherent Chains of Thought (CoT) but also demonstrates strong general capabilities? To address these questions, we design a pipeline to train DeepSeek-R1. The pipeline consists of four stages, outlined as follows.
+
+\subsection*{2.3.1. Cold Start}
+
+Unlike DeepSeek-R1-Zero, to prevent the early unstable cold start phase of RL training from the base model, for DeepSeek-R1 we construct and collect a small amount of long CoT data to fine-tune the model as the initial RL actor. To collect such data, we have explored several approaches: using few-shot prompting with a long CoT as an example, directly prompting models to generate detailed answers with reflection and verification, gathering DeepSeek-R1Zero outputs in a readable format, and refining the results through post-processing by human annotators.
+
+In this work, we collect thousands of cold-start data to fine-tune the DeepSeek-V3-Base as the starting point for RL. Compared to DeepSeek-R1-Zero, the advantages of cold start data
+    
+    """
 
     optimized = optimizer.optimize(test_content)
     print("优化前:")
