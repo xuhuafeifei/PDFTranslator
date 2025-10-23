@@ -41,7 +41,7 @@ python download_model.py
 
 ```python
 # 执行推理
-python inference.py \
+python main_refactored.py \
     --model_path weights/Logics-Parsing \
     --translator_path weights/Qwen3 \
     --output_path 输出路径, 需要指定文件名 \
